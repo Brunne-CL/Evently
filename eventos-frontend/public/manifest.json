@@ -1,0 +1,20 @@
+{
+  "short_name": "Evently",
+  "name": "Evently · Eventos en Querétaro",
+  "icons": [
+    {
+      "src": "logos/Evently_logo_1.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "logos/Evently_logo_2.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#3D5C48",
+  "background_color": "#F8F5F0"
+}
