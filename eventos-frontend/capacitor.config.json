@@ -1,0 +1,9 @@
+{
+  "appId": "mx.edu.uteq.evently",
+  "appName": "Evently",
+  "webDir": "mobile-shell",
+  "server": {
+    "url": "http://34.200.232.137",
+    "cleartext": true
+  }
+}

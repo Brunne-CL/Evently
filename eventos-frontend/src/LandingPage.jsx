@@ -44,12 +44,18 @@ import {
   LogOut,
   Lock,
   UserRound,
+  QrCode,
 } from 'lucide-react'
 import { useAuth } from './context/AuthContext.jsx'
 import { useEventData } from './context/EventDataContext.jsx'
 import AuthModal from './components/AuthModal.jsx'
+import QrSessionModal from './components/QrSessionModal.jsx'
 import EventDetailModal from './components/EventDetailModal.jsx'
 import ProfileModal from './components/ProfileModal.jsx'
+import PromoBanner from './components/PromoBanner.jsx'
+import PromoPopup from './components/PromoPopup.jsx'
+import NotificationPrompt from './components/NotificationPrompt.jsx'
+import InstallPrompt from './components/InstallPrompt.jsx'
 import { LOGO_LIGHT, LOGO_DARK } from './constants/brand.js'
 import { apiMisEventos, apiReserveEvent } from './lib/api.js'
 
@@ -228,7 +234,7 @@ function Reveal({ children, className = '', delay = 0 }) {
 
 const EVENT_ROTATE_MS = 4000
 
-function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile }) {
+function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile, onOpenQr, offsetTop = 0 }) {
   const { user, logout, isAuthenticated } = useAuth()
   const { totalEvents } = useEventData()
   const eventsBadge = formatEventsBadge(totalEvents)
@@ -270,12 +276,19 @@ function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile }) {
     onOpenProfile?.()
   }
 
+  const openQr = () => {
+    setUserMenuOpen(false)
+    setMobileOpen(false)
+    onOpenQr?.()
+  }
+
   return (
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: EASE }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      style={{ top: offsetTop }}
+      className={`fixed left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
           ? 'glass-strong border-b border-evently-border/80 py-3 shadow-soft'
           : 'bg-evently-bg/80 backdrop-blur-md py-5'
@@ -351,7 +364,16 @@ function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile }) {
                 </motion.button>
               </>
             ) : (
-              <div className="relative">
+              <div className="relative flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={openQr}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-evently-border bg-white text-sm font-medium text-evently-text hover:shadow-soft transition-all"
+                  aria-label="Entrar en el teléfono con código QR"
+                >
+                  <QrCode className="w-4 h-4" />
+                  <span className="hidden xl:inline">Teléfono</span>
+                </button>
                 <button
                   onClick={() => setUserMenuOpen((v) => !v)}
                   className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full border border-evently-border bg-white hover:shadow-soft transition-all duration-300"
@@ -373,7 +395,7 @@ function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile }) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -6, scale: 0.98 }}
                         transition={{ duration: 0.2, ease: EASE }}
-                        className="absolute right-0 top-full mt-2 w-52 bg-white rounded-2xl border border-evently-border shadow-elevated overflow-hidden z-50"
+                        className="absolute right-0 top-full mt-2 w-60 bg-white rounded-2xl border border-evently-border shadow-elevated overflow-hidden z-50"
                       >
                         <div className="px-4 py-3 border-b border-evently-border/80">
                           <p className="text-sm font-semibold text-evently-text truncate">{user.name}</p>
@@ -385,6 +407,13 @@ function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile }) {
                         >
                           <UserRound className="w-4 h-4" />
                           Mi perfil
+                        </button>
+                        <button
+                          onClick={openQr}
+                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-evently-textSecondary hover:text-evently-text hover:bg-evently-surface transition-colors border-b border-evently-border/60"
+                        >
+                          <QrCode className="w-4 h-4" />
+                          Entrar en el teléfono
                         </button>
                         <button
                           onClick={handleLogout}
@@ -456,6 +485,9 @@ function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile }) {
                     </div>
                     <button onClick={openProfile} className="flex items-center gap-2 py-2 text-evently-textSecondary hover:text-evently-text">
                       <UserRound className="w-4 h-4" /> Mi perfil
+                    </button>
+                    <button onClick={openQr} className="flex items-center gap-2 py-2 text-evently-textSecondary hover:text-evently-text">
+                      <QrCode className="w-4 h-4" /> Entrar en el teléfono
                     </button>
                     <button onClick={handleLogout} className="flex items-center gap-2 py-2 text-evently-muted hover:text-evently-text">
                       <LogOut className="w-4 h-4" /> Cerrar sesión
@@ -1314,23 +1346,25 @@ function MyEventsSection({ onOpenAuth, onOpenEvent }) {
       events.find((e) => e.id === reservation.id) ||
       {
         id: reservation.id,
-        title: reservation.titulo,
-        category: reservation.categoria || 'Evento',
-        date: reservation.fecha_inicio
+        title: reservation.titulo || reservation.title,
+        category: reservation.categoria || reservation.category || 'Evento',
+        date: reservation.date
+          || (reservation.fecha_inicio
           ? new Date(reservation.fecha_inicio).toLocaleDateString('es-MX', {
               day: '2-digit',
               month: 'short',
               year: 'numeric',
             })
-          : 'Fecha por confirmar',
-        time: reservation.fecha_inicio
+          : 'Fecha por confirmar'),
+        time: reservation.time
+          || (reservation.fecha_inicio
           ? new Date(reservation.fecha_inicio).toLocaleTimeString('es-MX', {
               hour: '2-digit',
               minute: '2-digit',
               hour12: false,
             })
-          : '--:--',
-        location: reservation.ubicacion || 'Querétaro',
+          : '--:--'),
+        location: reservation.ubicacion || reservation.location || 'Querétaro',
         description: 'Reserva confirmada en Evently.',
         image: reservation.imagen_url,
         spots: 0,
@@ -1429,15 +1463,24 @@ function MyEventsSection({ onOpenAuth, onOpenEvent }) {
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="font-semibold text-evently-text group-hover:text-[#10B981] transition-colors">
-                            {ev.titulo}
+                            {ev.titulo || ev.title || 'Evento'}
                           </p>
                           <p className="text-sm text-evently-muted mt-1">
-                            {ev.fecha_inicio
-                              ? new Date(ev.fecha_inicio).toLocaleString('es-MX')
-                              : 'Fecha por confirmar'}
+                            {ev.date && ev.time
+                              ? `${ev.date} · ${ev.time}`
+                              : ev.fecha_inicio
+                                ? new Date(ev.fecha_inicio).toLocaleString('es-MX', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: false,
+                                  })
+                                : 'Fecha por confirmar'}
                           </p>
                           <span className="inline-block mt-3 text-[10px] font-bold uppercase tracking-wider text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded-full">
-                            {ev.estado}
+                            {(ev.estado || 'confirmada').toString().toUpperCase()}
                           </span>
                         </div>
                         <ChevronRight className="w-4 h-4 text-evently-muted group-hover:text-[#10B981] flex-shrink-0 mt-1" />
@@ -2520,12 +2563,38 @@ function SearchModal({ open, onClose, onOpenEvent }) {
 /* ============================================================
    COMPONENTE PRINCIPAL · LANDING PAGE
    ============================================================ */
+function QrLoginCatcher() {
+  const { loginWithQr } = useAuth()
+  const showToast = useToast()
+  const started = useRef(false)
+
+  useEffect(() => {
+    if (started.current) return undefined
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('qr')
+    if (!code) return undefined
+    started.current = true
+    const url = new URL(window.location.href)
+    url.searchParams.delete('qr')
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}` || '/')
+    loginWithQr(code).then((result) => {
+      if (result.ok) showToast('Sesión iniciada en este teléfono', 'success')
+      else showToast(result.error || 'No se pudo entrar con el código QR', 'info')
+    })
+    return undefined
+  }, [loginWithQr, showToast])
+
+  return null
+}
+
 export default function LandingPage() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState('login')
+  const [qrOpen, setQrOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [bannerVisible, setBannerVisible] = useState(false)
 
   const openAuth = (mode = 'login') => {
     setAuthMode(mode)
@@ -2535,6 +2604,14 @@ export default function LandingPage() {
   const openEvent = useCallback((event) => {
     if (!event) return
     setSelectedEvent(event)
+  }, [])
+
+  const scrollToEvents = useCallback(() => {
+    document.getElementById('eventos')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
+
+  const onBannerVisibilityChange = useCallback((visible) => {
+    setBannerVisible(visible)
   }, [])
 
   // Atajo global ⌘K / Ctrl+K para abrir el buscador desde cualquier parte.
@@ -2557,14 +2634,23 @@ export default function LandingPage() {
     return () => window.removeEventListener('keydown', onKey)
   }, [searchOpen])
 
+  const bannerOffset = bannerVisible ? 40 : 0
+
   return (
     <ToastProvider>
+      <QrLoginCatcher />
       <main className="relative bg-evently-bg text-evently-text min-h-screen overflow-hidden">
         <ScrollProgressBar />
+        <PromoBanner
+          onVisibilityChange={onBannerVisibilityChange}
+          onCta={scrollToEvents}
+        />
         <Navbar
           onOpenSearch={() => setSearchOpen(true)}
           onOpenAuth={openAuth}
           onOpenProfile={() => setProfileOpen(true)}
+          onOpenQr={() => setQrOpen(true)}
+          offsetTop={bannerOffset}
         />
         <Hero />
         <Categories />
@@ -2574,6 +2660,9 @@ export default function LandingPage() {
         <SmartwatchCTA />
         <Footer />
         <BackToTop />
+        <PromoPopup onCta={scrollToEvents} />
+        <NotificationHost />
+        <InstallPrompt />
         <SearchModal
           open={searchOpen}
           onClose={() => setSearchOpen(false)}
@@ -2584,6 +2673,7 @@ export default function LandingPage() {
           onClose={() => setAuthOpen(false)}
           initialMode={authMode}
         />
+        <QrSessionModal open={qrOpen} onClose={() => setQrOpen(false)} />
         <ProfileHost
           open={profileOpen}
           onClose={() => setProfileOpen(false)}
@@ -2602,6 +2692,11 @@ export default function LandingPage() {
 function ProfileHost({ open, onClose }) {
   const showToast = useToast()
   return <ProfileModal open={open} onClose={onClose} showToast={showToast} />
+}
+
+function NotificationHost() {
+  const showToast = useToast()
+  return <NotificationPrompt showToast={showToast} />
 }
 
 function EventDetailHost({ event, open, onClose, onOpenAuth }) {

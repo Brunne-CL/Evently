@@ -122,7 +122,7 @@ VALUES
     'Música, arte y comunidad universitaria en el Centro Histórico.',
     (SELECT id FROM categorias WHERE nombre = 'Festivales'),
     '2026-06-15 18:00:00',
-    'Plaza de Armas · Centro Histórico',
+    'Plaza de Armas - Centro Histórico',
     850, 0,
     'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&q=80&auto=format&fit=crop',
     1
@@ -132,13 +132,13 @@ VALUES
     'Una conversación abierta sobre inteligencia artificial y empleo.',
     (SELECT id FROM categorias WHERE nombre = 'Académicos'),
     '2026-07-22 17:00:00',
-    'UAQ · Auditorio Fernando Díaz Ramírez',
+    'UAQ - Auditorio Fernando Díaz Ramírez',
     120, 0,
     'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&q=80&auto=format&fit=crop',
     0
   ),
   (
-    'Dev QRO · Meetup mensual',
+    'Encuentro mensual Dev QRO',
     'Encuentro mensual para desarrolladores y profesionales de tecnología.',
     (SELECT id FROM categorias WHERE nombre = 'Networking'),
     '2026-08-08 19:30:00',

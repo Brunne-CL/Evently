@@ -35,3 +35,20 @@ Thumbs.db
 # Sistema
 *.tmp
 *.temp
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/android/local.properties
+**/android/.gradle/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+*.iml
+.metadata

@@ -4,14 +4,33 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Landing page moderna para Evently - App de eventos en Querétaro, México",
+  "browserslist": [
+    ">0.5%",
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions",
+    "iOS >= 14",
+    "Android >= 10",
+    "not dead",
+    "not op_mini all"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:search": "node scripts/test-search.mjs",
+    "check:share": "node scripts/check-share.mjs",
+    "share": "cloudflared tunnel --url http://127.0.0.1:5173",
+    "share:named": "npx --yes localtunnel --port 5173 --subdomain evently-qro"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
     "framer-motion": "^11.5.4",
     "lucide-react": "^0.439.0",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

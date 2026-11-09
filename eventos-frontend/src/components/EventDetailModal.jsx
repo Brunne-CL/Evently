@@ -20,6 +20,7 @@ import {
   apiRemoveFavorite,
   apiReserveEvent,
 } from '../lib/api.js'
+import { notifyEventReminder } from '../lib/notifications.js'
 
 const EASE = [0.16, 1, 0.3, 1]
 
@@ -110,6 +111,7 @@ export default function EventDetailModal({
       next ? `Asistencia confirmada · ${event.title}` : 'Asistencia cancelada',
       next ? 'success' : 'info'
     )
+    if (next) notifyEventReminder(event)
     await refresh()
     window.dispatchEvent(new Event('evently:reservations-changed'))
   }

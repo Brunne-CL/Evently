@@ -4,7 +4,7 @@ const { verifyAccessToken, isAccessTokenRevoked } = require('../utils/tokens')
  * Exige Authorization: Bearer <token>
  * Sin token válido → 401 (pantalla/API inaccesible sin autenticación)
  */
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   const header = req.headers.authorization || ''
   const [scheme, token] = header.split(' ')
 
@@ -18,7 +18,7 @@ function requireAuth(req, res, next) {
 
   try {
     const payload = verifyAccessToken(token)
-    if (isAccessTokenRevoked(payload)) {
+    if (await isAccessTokenRevoked(payload)) {
       return res.status(401).json({
         ok: false,
         error: 'La sesión fue cerrada. Vuelve a iniciar sesión.',

@@ -1,6 +1,7 @@
 const { query } = require('../config/db')
 const { hashPassword, verifyPassword, isValidPin } = require('../utils/password')
 const { signAccessToken, revokeAccessToken } = require('../utils/tokens')
+const { createQrSession, takeQrSession, peekQrSession, QR_CODE_RE } = require('../utils/qrSessions')
 
 function publicUser(row) {
   return {
@@ -23,9 +24,12 @@ function isValidEmail(email) {
  */
 async function register(req, res) {
   try {
-    const { name, email, password, confirmPassword, pin } = req.body || {}
+    const { name, email, password, confirmPassword, pin, telefono } = req.body || {}
     const nombre = typeof name === 'string' ? name.trim() : ''
     const mail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+    const phoneRaw = typeof telefono === 'string' ? telefono.trim() : ''
+    const phoneDigits = phoneRaw.replace(/\D/g, '')
+    const pinStr = pin != null && pin !== '' ? String(pin) : ''
 
     if (!nombre || nombre.length < 2) {
       return res.status(400).json({ ok: false, error: 'El nombre debe tener al menos 2 caracteres.' })
@@ -39,8 +43,17 @@ async function register(req, res) {
     if (password !== confirmPassword) {
       return res.status(400).json({ ok: false, error: 'Las contraseñas no coinciden.' })
     }
-    if (pin != null && pin !== '' && !isValidPin(String(pin))) {
+    if (pinStr && !isValidPin(pinStr)) {
       return res.status(400).json({ ok: false, error: 'El PIN debe tener entre 4 y 6 dígitos.' })
+    }
+    if (pinStr && (phoneDigits.length < 7 || phoneDigits.length > 15)) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Para configurar un PIN debes indicar un número de teléfono válido.',
+      })
+    }
+    if (phoneRaw && (phoneDigits.length < 7 || phoneDigits.length > 15)) {
+      return res.status(400).json({ ok: false, error: 'Número de teléfono inválido.' })
     }
 
     const existing = await query('SELECT id FROM usuarios WHERE email = :email LIMIT 1', { email: mail })
@@ -49,12 +62,13 @@ async function register(req, res) {
     }
 
     const password_hash = await hashPassword(password)
-    const pin_hash = pin ? await hashPassword(String(pin)) : null
+    const pin_hash = pinStr ? await hashPassword(pinStr) : null
+    const telefonoVal = phoneDigits.length >= 7 ? phoneRaw : null
 
     const result = await query(
-      `INSERT INTO usuarios (nombre, email, password_hash, pin_hash, ciudad)
-       VALUES (:nombre, :email, :password_hash, :pin_hash, 'Querétaro')`,
-      { nombre, email: mail, password_hash, pin_hash }
+      `INSERT INTO usuarios (nombre, email, password_hash, pin_hash, ciudad, telefono)
+       VALUES (:nombre, :email, :password_hash, :pin_hash, 'Querétaro', :telefono)`,
+      { nombre, email: mail, password_hash, pin_hash, telefono: telefonoVal }
     )
 
     const rows = await query(
@@ -132,16 +146,17 @@ async function login(req, res) {
 
 /**
  * POST /api/auth/pin-login
- * Autenticación smartwatch: email + PIN 4–6 dígitos (hash bcrypt).
+ * Autenticación smartwatch: teléfono + PIN 4–6 dígitos (hash bcrypt).
  */
 async function pinLogin(req, res) {
   try {
-    const { email, pin } = req.body || {}
-    const mail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+    const { telefono, phone, pin } = req.body || {}
+    const rawPhone = typeof telefono === 'string' ? telefono : typeof phone === 'string' ? phone : ''
+    const phoneDigits = String(rawPhone).replace(/\D/g, '')
     const pinStr = pin != null ? String(pin) : ''
 
-    if (!isValidEmail(mail)) {
-      return res.status(400).json({ ok: false, error: 'Correo inválido.' })
+    if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+      return res.status(400).json({ ok: false, error: 'Número de teléfono inválido.' })
     }
     if (!isValidPin(pinStr)) {
       return res.status(400).json({ ok: false, error: 'El PIN debe tener entre 4 y 6 dígitos.' })
@@ -149,12 +164,17 @@ async function pinLogin(req, res) {
 
     const rows = await query(
       `SELECT id, nombre, email, ciudad, telefono, pin_hash, activo
-       FROM usuarios WHERE email = :email LIMIT 1`,
-      { email: mail }
+       FROM usuarios
+       WHERE REGEXP_REPLACE(IFNULL(telefono, ''), '[^0-9]', '') = :phone
+       LIMIT 1`,
+      { phone: phoneDigits }
     )
 
     if (rows.length === 0 || !rows[0].pin_hash) {
-      return res.status(401).json({ ok: false, error: 'PIN o correo incorrectos.' })
+      return res.status(401).json({
+        ok: false,
+        error: 'PIN o teléfono incorrectos. Guarda tu teléfono en el perfil web.',
+      })
     }
 
     const row = rows[0]
@@ -164,7 +184,10 @@ async function pinLogin(req, res) {
 
     const valid = await verifyPassword(pinStr, row.pin_hash)
     if (!valid) {
-      return res.status(401).json({ ok: false, error: 'PIN o correo incorrectos.' })
+      return res.status(401).json({
+        ok: false,
+        error: 'PIN o teléfono incorrectos. Guarda tu teléfono en el perfil web.',
+      })
     }
 
     await query('UPDATE usuarios SET ultimo_acceso = NOW() WHERE id = :id', { id: row.id })
@@ -202,11 +225,20 @@ async function setPin(req, res) {
     }
 
     const rows = await query(
-      'SELECT id, password_hash FROM usuarios WHERE id = :id LIMIT 1',
+      'SELECT id, password_hash, telefono FROM usuarios WHERE id = :id LIMIT 1',
       { id: req.user.id }
     )
     if (rows.length === 0) {
       return res.status(404).json({ ok: false, error: 'Usuario no encontrado.' })
+    }
+
+    const phoneDigits = String(rows[0].telefono || '').replace(/\D/g, '')
+    if (phoneDigits.length < 7) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Primero guarda un número de teléfono en tu perfil para poder configurar el PIN.',
+        code: 'PHONE_REQUIRED',
+      })
     }
 
     const okPass = await verifyPassword(password, rows[0].password_hash)
@@ -257,6 +289,19 @@ async function updateProfile(req, res) {
       return res.status(400).json({ ok: false, error: 'Teléfono inválido.' })
     }
 
+    const phoneDigits = phone.replace(/\D/g, '')
+    const current = await query(
+      'SELECT pin_hash FROM usuarios WHERE id = :id LIMIT 1',
+      { id: req.user.id }
+    )
+    if (current[0]?.pin_hash && phoneDigits.length < 7) {
+      return res.status(400).json({
+        ok: false,
+        error: 'No puedes quitar el teléfono mientras tengas un PIN. Borra o cambia el PIN primero, o deja un teléfono válido.',
+        code: 'PHONE_REQUIRED_FOR_PIN',
+      })
+    }
+
     await query(
       `UPDATE usuarios
        SET nombre = :nombre, ciudad = :ciudad, telefono = :telefono
@@ -264,7 +309,7 @@ async function updateProfile(req, res) {
       {
         nombre,
         ciudad: city,
-        telefono: phone || null,
+        telefono: phoneDigits.length >= 7 ? phone : null,
         id: req.user.id,
       }
     )
@@ -314,7 +359,7 @@ async function me(req, res) {
  * Con JWT el cliente elimina el token; aquí registramos el cierre.
  */
 async function logout(req, res) {
-  revokeAccessToken(req.user.tokenPayload)
+  await revokeAccessToken(req.user.tokenPayload)
   return res.json({ ok: true, message: 'Sesión cerrada correctamente.' })
 }
 
@@ -325,9 +370,7 @@ async function logout(req, res) {
 async function misEventos(req, res) {
   try {
     const rows = await query(
-      `SELECT r.id AS reserva_id, r.estado, r.confirmado_en,
-              e.id, e.titulo, e.fecha_inicio, e.imagen_url,
-              e.ubicacion, c.nombre AS categoria
+      `SELECT e.*, c.nombre AS categoria, r.confirmado_en
        FROM reservas r
        JOIN eventos e ON e.id = r.evento_id
        JOIN categorias c ON c.id = e.categoria_id
@@ -337,14 +380,142 @@ async function misEventos(req, res) {
       { uid: req.user.id }
     )
 
+    const events = (rows || []).map((row) => {
+      const start = new Date(row.fecha_inicio)
+      const date = new Intl.DateTimeFormat('es-MX', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'America/Mexico_City',
+      })
+        .format(start)
+        .replace('.', '')
+      const time = new Intl.DateTimeFormat('es-MX', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'America/Mexico_City',
+      }).format(start)
+
+      const cleanText = (value) =>
+        String(value || '')
+          .replace(/\u00b7|┬À|Â·/g, ' - ')
+          .replace(/\s+-\s+/g, ' - ')
+          .trim()
+
+      const title = cleanText(row.titulo)
+      const location = cleanText(row.ubicacion)
+
+      return {
+        id: row.id,
+        title,
+        titulo: title,
+        description: row.descripcion,
+        category: row.categoria,
+        categoria: row.categoria,
+        date,
+        time,
+        fecha_inicio: row.fecha_inicio,
+        location,
+        ubicacion: location,
+        confirmed: true,
+        confirmedAt: row.confirmado_en,
+        confirmado_en: row.confirmado_en,
+        estado: 'confirmada',
+      }
+    })
+
     return res.json({
       ok: true,
       user: req.user,
-      eventos: rows || [],
+      events,
+      eventos: events,
     })
   } catch (err) {
     console.error('[auth/mis-eventos]', err.message)
     return res.status(500).json({ ok: false, error: 'Error al cargar tus eventos.' })
+  }
+}
+
+/**
+ * POST /api/auth/qr-login  (protegido)
+ * Crea un código de un solo uso para que el teléfono entre con la sesión web.
+ * El QR lleva el código, no la contraseña ni el token.
+ */
+async function createQrLogin(req, res) {
+  const ticket = await createQrSession(req.user.id)
+  return res.json({
+    ok: true,
+    code: ticket.code,
+    expiresAt: ticket.expiresAt,
+    ttlSeconds: ticket.ttlSeconds,
+  })
+}
+
+/**
+ * GET /api/auth/qr-login/:code  (protegido)
+ * La web consulta si el teléfono ya canjeó su código.
+ */
+async function qrLoginStatus(req, res) {
+  const code = typeof req.params.code === 'string' ? req.params.code : ''
+  if (!QR_CODE_RE.test(code)) {
+    return res.json({ ok: true, status: 'expired' })
+  }
+  return res.json({ ok: true, status: await peekQrSession(code, req.user.id) })
+}
+
+/**
+ * POST /api/auth/qr-login/redeem
+ * El teléfono cambia el código por una sesión. El código queda usado.
+ */
+async function redeemQrLogin(req, res) {
+  try {
+    const code = typeof req.body?.code === 'string' ? req.body.code.trim() : ''
+    if (!QR_CODE_RE.test(code)) {
+      return res.status(400).json({ ok: false, error: 'Código QR inválido.' })
+    }
+
+    const taken = await takeQrSession(code)
+    if (taken.error === 'used') {
+      return res.status(401).json({
+        ok: false,
+        error: 'Ese código ya se usó. Genera otro desde la web.',
+      })
+    }
+    if (taken.error) {
+      return res.status(401).json({
+        ok: false,
+        error: 'Ese código ya no es válido. Genera otro desde la web.',
+      })
+    }
+
+    const rows = await query(
+      `SELECT id, nombre, email, ciudad, telefono, pin_hash, activo
+       FROM usuarios WHERE id = :id LIMIT 1`,
+      { id: taken.userId }
+    )
+    if (rows.length === 0 || !rows[0].activo) {
+      return res.status(401).json({
+        ok: false,
+        error: 'No se pudo iniciar la sesión con ese código.',
+      })
+    }
+
+    await query('UPDATE usuarios SET ultimo_acceso = NOW() WHERE id = :id', { id: rows[0].id })
+
+    const user = publicUser(rows[0])
+    const token = signAccessToken(user)
+
+    return res.json({
+      ok: true,
+      user,
+      token,
+      expiresIn: process.env.JWT_EXPIRES_IN || '8h',
+      method: 'qr',
+    })
+  } catch (err) {
+    console.error('[auth/qr-login]', err.message)
+    return res.status(500).json({ ok: false, error: 'Error al iniciar sesión con el código QR.' })
   }
 }
 
@@ -357,4 +528,7 @@ module.exports = {
   me,
   logout,
   misEventos,
+  createQrLogin,
+  qrLoginStatus,
+  redeemQrLogin,
 }

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const { randomUUID } = require('crypto')
+const { getRedis } = require('../config/redis')
 
 const SECRET = process.env.JWT_SECRET || 'evently_dev_secret'
 const EXPIRES_IN = process.env.JWT_EXPIRES_IN || '8h'
@@ -29,15 +30,29 @@ function verifyAccessToken(token) {
   return jwt.verify(token, SECRET)
 }
 
-function revokeAccessToken(payload) {
+async function revokeAccessToken(payload) {
   if (!payload?.jti || !payload?.exp) return
+  const redis = getRedis()
+  if (redis) {
+    const ttl = Number(payload.exp) - Math.floor(Date.now() / 1000)
+    if (ttl > 0) {
+      await redis.set(`evently:revoked:${payload.jti}`, '1', { EX: ttl })
+    }
+    return
+  }
   cleanExpiredRevocations()
   revokedTokens.set(payload.jti, payload.exp)
 }
 
-function isAccessTokenRevoked(payload) {
+async function isAccessTokenRevoked(payload) {
+  if (!payload?.jti) return false
+  const redis = getRedis()
+  if (redis) {
+    const hit = await redis.get(`evently:revoked:${payload.jti}`)
+    return Boolean(hit)
+  }
   cleanExpiredRevocations()
-  return Boolean(payload?.jti && revokedTokens.has(payload.jti))
+  return revokedTokens.has(payload.jti)
 }
 
 module.exports = {

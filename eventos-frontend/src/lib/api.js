@@ -1,9 +1,33 @@
 /**
  * Cliente HTTP hacia la API Evently (Express + MySQL).
  * Token JWT en sessionStorage (sesión de pestaña) + localStorage opcional.
+ *
+ * Por el túnel (trycloudflare / loca.lt) SIEMPRE usa rutas relativas `/api/...`
+ * para que Vite haga de proxy. Así el navegador del profesor no intenta
+ * hablar con localhost en SU máquina.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+function resolveApiBase() {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname || ''
+    if (
+      host.includes('trycloudflare.com') ||
+      host.includes('loca.lt') ||
+      host.endsWith('.local')
+    ) {
+      return ''
+    }
+  }
+
+  const envUrl = (import.meta.env.VITE_API_URL || '').trim()
+  // Si alguien dejó VITE_API_URL=http://localhost:4000, en túnel ya se forzó '' arriba.
+  // En dev local también preferimos el proxy de Vite.
+  if (import.meta.env.DEV) return ''
+  if (envUrl) return envUrl.replace(/\/$/, '')
+  return 'http://127.0.0.1:4000'
+}
+
+const API_BASE = resolveApiBase()
 
 const TOKEN_KEY = 'evently_token'
 const USER_KEY = 'evently_user'
@@ -93,6 +117,23 @@ export async function apiLogin(payload) {
 export async function apiPinLogin(payload) {
   const data = await request('/api/auth/pin-login', { method: 'POST', body: payload })
   if (data.ok && data.token) persistSession(data)
+  return data
+}
+
+/** La web, ya autenticada, pide un código de un solo uso para el teléfono. */
+export async function apiCreateQrLogin() {
+  return request('/api/auth/qr-login', { method: 'POST', auth: true })
+}
+
+/** pending | used | expired */
+export async function apiQrLoginStatus(code) {
+  return request(`/api/auth/qr-login/${encodeURIComponent(code)}`, { auth: true })
+}
+
+/** El teléfono canjea el código del QR por una sesión. */
+export async function apiRedeemQrLogin(code) {
+  const data = await request('/api/auth/qr-login/redeem', { method: 'POST', body: { code } })
+  if (data.ok && data.token) persistSession(data, true)
   return data
 }
 

@@ -1,0 +1,33 @@
+# Render Blueprint — Evently API
+# Dashboard → New → Blueprint → este archivo (carpeta eventos-backend)
+# Luego crea un MySQL (Railway / Aiven / FreeDB) y pega DB_* en Environment.
+
+services:
+  - type: web
+    name: evently-api
+    runtime: node
+    rootDir: eventos-backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: BCRYPT_ROUNDS
+        value: "12"
+      - key: CORS_ORIGIN
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: evently_db

@@ -10,9 +10,11 @@ import {
   Loader2,
   AlertCircle,
   Watch,
+  Phone,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { LOGO_LIGHT } from '../constants/brand.js'
+import QrScanPanel from './QrScanPanel.jsx'
 
 const INITIAL_LOGIN = { email: '', password: '' }
 const INITIAL_REGISTER = {
@@ -20,9 +22,10 @@ const INITIAL_REGISTER = {
   email: '',
   password: '',
   confirmPassword: '',
+  telefono: '',
   pin: '',
 }
-const INITIAL_PIN = { email: '', pin: '' }
+const INITIAL_PIN = { telefono: '', pin: '' }
 
 export default function AuthModal({ open, onClose, initialMode = 'login' }) {
   const { login, register, loginWithPin } = useAuth()
@@ -87,11 +90,18 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
   const handleRegister = async (e) => {
     e.preventDefault()
     setError('')
+    const pin = registerForm.pin?.trim() || ''
+    const phoneDigits = String(registerForm.telefono || '').replace(/\D/g, '')
+    if (pin && phoneDigits.length < 7) {
+      setError('Para configurar un PIN debes indicar un número de teléfono.')
+      return
+    }
     setLoading(true)
     try {
       const payload = {
         ...registerForm,
-        pin: registerForm.pin?.trim() || undefined,
+        pin: pin || undefined,
+        telefono: registerForm.telefono?.trim() || undefined,
       }
       const result = await register(payload)
       if (result.ok) handleClose()
@@ -117,7 +127,8 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
   const titles = {
     login: { h: 'Iniciar sesión', p: 'Accede con tu correo y contraseña' },
     register: { h: 'Crear cuenta', p: 'Únete a Evently · datos en MySQL (Laragon)' },
-    pin: { h: 'Acceso smartwatch', p: 'PIN de 4 a 6 dígitos (hasheado)' },
+    pin: { h: 'Acceso smartwatch', p: 'Teléfono + PIN de 4 a 6 dígitos' },
+    qr: { h: 'Escanear QR', p: 'Entra con la sesión que ya tienes en la web' },
   }
   const t = titles[mode] || titles.login
 
@@ -173,6 +184,7 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
                   { id: 'login', label: 'Sesión' },
                   { id: 'register', label: 'Registro' },
                   { id: 'pin', label: 'PIN' },
+                  { id: 'qr', label: 'QR' },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -248,6 +260,13 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
                       'Entrar'
                     )}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => switchMode('qr')}
+                    className="w-full text-sm font-medium text-evently-textSecondary hover:text-evently-text"
+                  >
+                    Ya inicié sesión en la computadora: escanear QR
+                  </button>
                 </form>
               )}
 
@@ -322,6 +341,27 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
                     </button>
                   </div>
                   <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
+                    <input
+                      type="tel"
+                      inputMode="tel"
+                      required={Boolean(registerForm.pin)}
+                      value={registerForm.telefono}
+                      onChange={(e) =>
+                        setRegisterForm((f) => ({
+                          ...f,
+                          telefono: e.target.value.replace(/[^\d+\s\-()]/g, '').slice(0, 20),
+                        }))
+                      }
+                      placeholder={
+                        registerForm.pin
+                          ? 'Teléfono (obligatorio con PIN)'
+                          : 'Teléfono (opcional)'
+                      }
+                      className="w-full pl-11 pr-4 py-3 rounded-xl glass text-sm focus:outline-none focus:ring-2 focus:ring-[#10B981] text-evently-text placeholder-evently-muted"
+                    />
+                  </div>
+                  <div className="relative">
                     <Watch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
                     <input
                       type="password"
@@ -355,16 +395,24 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
                 </form>
               )}
 
+              {mode === 'qr' && <QrScanPanel onSuccess={handleClose} />}
+
               {mode === 'pin' && (
                 <form onSubmit={handlePinLogin} className="space-y-4 pb-5">
                   <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
                     <input
-                      type="email"
+                      type="tel"
+                      inputMode="tel"
                       required
-                      value={pinForm.email}
-                      onChange={(e) => setPinForm((f) => ({ ...f, email: e.target.value }))}
-                      placeholder="Correo electrónico"
+                      value={pinForm.telefono}
+                      onChange={(e) =>
+                        setPinForm((f) => ({
+                          ...f,
+                          telefono: e.target.value.replace(/[^\d+\s\-()]/g, '').slice(0, 20),
+                        }))
+                      }
+                      placeholder="Número de teléfono"
                       className="w-full pl-11 pr-4 py-3 rounded-xl glass text-sm focus:outline-none focus:ring-2 focus:ring-[#10B981] text-evently-text placeholder-evently-muted"
                     />
                   </div>

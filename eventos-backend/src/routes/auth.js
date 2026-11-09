@@ -17,6 +17,9 @@ const authLimiter = rateLimit({
 router.post('/register', authLimiter, ctrl.register)
 router.post('/login', authLimiter, ctrl.login)
 router.post('/pin-login', authLimiter, ctrl.pinLogin)
+router.post('/qr-login', requireAuth, ctrl.createQrLogin)
+router.post('/qr-login/redeem', authLimiter, ctrl.redeemQrLogin)
+router.get('/qr-login/:code', requireAuth, ctrl.qrLoginStatus)
 router.post('/logout', requireAuth, ctrl.logout)
 
 router.get('/me', requireAuth, ctrl.me)

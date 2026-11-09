@@ -29,7 +29,7 @@ API en `http://localhost:4000`
 |--------|------|------|-------------|
 | POST | `/api/auth/register` | No | Registro (password + PIN opcional hasheados) |
 | POST | `/api/auth/login` | No | Login email + password |
-| POST | `/api/auth/pin-login` | No | Login smartwatch (PIN 4–6 dígitos) |
+| POST | `/api/auth/pin-login` | No | Login smartwatch (teléfono + PIN 4–6 dígitos) |
 | POST | `/api/auth/logout` | No* | Cierre de sesión (cliente borra JWT) |
 | GET | `/api/auth/me` | Bearer | Perfil (protegido) |
 | POST | `/api/auth/set-pin` | Bearer | Configurar PIN |
@@ -55,3 +55,12 @@ API en `http://localhost:4000`
 React no contiene arreglos locales de eventos o categorías. El catálogo, los
 usuarios, las reservas y los favoritos se consultan y modifican mediante la API,
 con persistencia en las tablas MySQL de `evently_db`.
+
+## Práctica 10 — esquema estable / migraciones
+
+Documentación: [`.docs/practica-10-base-datos-estable.md`](../.docs/practica-10-base-datos-estable.md)
+
+Después del bootstrap `sql/schema-mysql-auth.sql`, aplica el calendario y la
+tabla `dispositivos`:
+
+`.docs/sql/migrations/001_calendario_actualizaciones.sql`

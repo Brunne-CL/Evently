@@ -5,6 +5,7 @@ import {
   apiLogout,
   apiMe,
   apiPinLogin,
+  apiRedeemQrLogin,
   apiSetPin,
   apiUpdateProfile,
   getCachedUser,
@@ -60,6 +61,12 @@ export function AuthProvider({ children }) {
     return result
   }, [])
 
+  const loginWithQr = useCallback(async (code) => {
+    const result = await apiRedeemQrLogin(code)
+    if (result.ok) setUser(result.user)
+    return result
+  }, [])
+
   const updateProfile = useCallback(async (payload) => {
     const result = await apiUpdateProfile(payload)
     if (result.ok) setUser(result.user)
@@ -84,6 +91,7 @@ export function AuthProvider({ children }) {
         login,
         register,
         loginWithPin,
+        loginWithQr,
         updateProfile,
         setPin,
         logout,

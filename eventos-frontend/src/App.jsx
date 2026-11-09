@@ -1,16 +1,24 @@
 import { AuthProvider } from './context/AuthContext.jsx'
 import { EventDataProvider } from './context/EventDataContext.jsx'
 import LandingPage from './LandingPage.jsx'
-import WatchSimulator from './WatchSimulator.jsx'
+import EventlyTVWidget from './widgets/EventlyTVWidget.jsx'
+import FlutterDashboardEmbed from './components/FlutterDashboardEmbed.jsx'
+import OpenInApp from './components/OpenInApp.jsx'
 
 function App() {
-  const isWatchSimulator = window.location.pathname === '/watch'
+  const path = window.location.pathname
+  const isTvWidget = path === '/tv' || path.startsWith('/tv/')
+  const isDashboard = path === '/dashboard' || path.startsWith('/dashboard/')
+  const isOpenApp = path === '/abrir' || path.startsWith('/abrir/')
+
+  let page = <LandingPage />
+  if (isOpenApp) page = <OpenInApp />
+  else if (isTvWidget) page = <EventlyTVWidget />
+  else if (isDashboard) page = <FlutterDashboardEmbed />
 
   return (
     <AuthProvider>
-      <EventDataProvider>
-        {isWatchSimulator ? <WatchSimulator /> : <LandingPage />}
-      </EventDataProvider>
+      <EventDataProvider>{page}</EventDataProvider>
     </AuthProvider>
   )
 }

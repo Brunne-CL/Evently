@@ -98,6 +98,12 @@ export default function ProfileModal({ open, onClose, showToast }) {
     setError('')
     setSuccess('')
 
+    const phoneDigits = String(user?.telefono || profileForm.telefono || '').replace(/\D/g, '')
+    if (phoneDigits.length < 7) {
+      setError('Primero guarda un número de teléfono en la pestaña Datos.')
+      return
+    }
+
     if (pinForm.pin !== pinForm.confirmPin) {
       setError('Los PIN no coinciden.')
       return
@@ -120,6 +126,10 @@ export default function ProfileModal({ open, onClose, showToast }) {
       setLoading(false)
     }
   }
+
+  const hasPhone =
+    String(user?.telefono || profileForm.telefono || '').replace(/\D/g, '').length >= 7
+
 
   return (
     <AnimatePresence>
@@ -328,109 +338,139 @@ export default function ProfileModal({ open, onClose, showToast }) {
                       <p className="text-xs text-evently-muted mt-1 leading-relaxed">
                         {user.hasPin
                           ? 'Ya tienes un PIN. Puedes cambiarlo confirmando tu contraseña.'
-                          : 'Configura un PIN de 4–6 dígitos para entrar desde el reloj.'}
+                          : 'Configura un PIN de 4–6 dígitos para entrar desde el reloj con tu teléfono.'}
                       </p>
                     </div>
                   </div>
 
-                  <label className="block">
-                    <span className="text-xs font-semibold text-evently-muted uppercase tracking-wider mb-1.5 block">
-                      Nuevo PIN
-                    </span>
-                    <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
-                      <input
-                        required
-                        inputMode="numeric"
-                        pattern="\d{4,6}"
-                        minLength={4}
-                        maxLength={6}
-                        value={pinForm.pin}
-                        onChange={(e) =>
-                          setPinForm((f) => ({
-                            ...f,
-                            pin: e.target.value.replace(/\D/g, '').slice(0, 6),
-                          }))
-                        }
-                        className="w-full pl-10 pr-4 py-3 rounded-2xl border border-evently-border bg-white text-sm text-evently-text outline-none focus:border-[#10B981]/50 focus:ring-2 focus:ring-[#10B981]/15 tracking-widest"
-                        placeholder="4–6 dígitos"
-                      />
-                    </div>
-                  </label>
-
-                  <label className="block">
-                    <span className="text-xs font-semibold text-evently-muted uppercase tracking-wider mb-1.5 block">
-                      Confirmar PIN
-                    </span>
-                    <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
-                      <input
-                        required
-                        inputMode="numeric"
-                        pattern="\d{4,6}"
-                        minLength={4}
-                        maxLength={6}
-                        value={pinForm.confirmPin}
-                        onChange={(e) =>
-                          setPinForm((f) => ({
-                            ...f,
-                            confirmPin: e.target.value.replace(/\D/g, '').slice(0, 6),
-                          }))
-                        }
-                        className="w-full pl-10 pr-4 py-3 rounded-2xl border border-evently-border bg-white text-sm text-evently-text outline-none focus:border-[#10B981]/50 focus:ring-2 focus:ring-[#10B981]/15 tracking-widest"
-                        placeholder="Repite el PIN"
-                      />
-                    </div>
-                  </label>
-
-                  <label className="block">
-                    <span className="text-xs font-semibold text-evently-muted uppercase tracking-wider mb-1.5 block">
-                      Contraseña actual
-                    </span>
-                    <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
-                      <input
-                        required
-                        type={showPassword ? 'text' : 'password'}
-                        value={pinForm.password}
-                        onChange={(e) =>
-                          setPinForm((f) => ({ ...f, password: e.target.value }))
-                        }
-                        className="w-full pl-10 pr-11 py-3 rounded-2xl border border-evently-border bg-white text-sm text-evently-text outline-none focus:border-[#10B981]/50 focus:ring-2 focus:ring-[#10B981]/15"
-                        placeholder="Confirma tu contraseña"
-                      />
+                  {!hasPhone ? (
+                    <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 space-y-3">
+                      <p className="text-sm text-amber-900 leading-relaxed">
+                        Para tener PIN debes guardar primero un{' '}
+                        <strong>número de teléfono</strong> en tu perfil. Es el
+                        dato que usa el smartwatch para iniciar sesión.
+                      </p>
                       <button
                         type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-evently-muted hover:text-evently-text"
-                        aria-label={showPassword ? 'Ocultar' : 'Mostrar'}
+                        onClick={() => {
+                          setTab('datos')
+                          setError('')
+                          setSuccess('')
+                        }}
+                        className="w-full btn-primary py-3 rounded-2xl text-sm font-semibold"
                       >
-                        {showPassword ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
+                        Ir a Datos y agregar teléfono
                       </button>
                     </div>
-                  </label>
+                  ) : (
+                    <>
+                      <p className="text-xs text-evently-muted">
+                        Teléfono vinculado:{' '}
+                        <span className="font-semibold text-evently-text">
+                          {user?.telefono || profileForm.telefono}
+                        </span>
+                      </p>
 
-                  <motion.button
-                    type="submit"
-                    disabled={loading}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    className="w-full btn-cta py-3.5 rounded-2xl font-semibold text-sm mt-2 disabled:opacity-60 flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Guardando…
-                      </>
-                    ) : user.hasPin ? (
-                      'Actualizar PIN'
-                    ) : (
-                      'Configurar PIN'
-                    )}
-                  </motion.button>
+                      <label className="block">
+                        <span className="text-xs font-semibold text-evently-muted uppercase tracking-wider mb-1.5 block">
+                          Nuevo PIN
+                        </span>
+                        <div className="relative">
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
+                          <input
+                            required
+                            inputMode="numeric"
+                            pattern="\d{4,6}"
+                            minLength={4}
+                            maxLength={6}
+                            value={pinForm.pin}
+                            onChange={(e) =>
+                              setPinForm((f) => ({
+                                ...f,
+                                pin: e.target.value.replace(/\D/g, '').slice(0, 6),
+                              }))
+                            }
+                            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-evently-border bg-white text-sm text-evently-text outline-none focus:border-[#10B981]/50 focus:ring-2 focus:ring-[#10B981]/15 tracking-widest"
+                            placeholder="4–6 dígitos"
+                          />
+                        </div>
+                      </label>
+
+                      <label className="block">
+                        <span className="text-xs font-semibold text-evently-muted uppercase tracking-wider mb-1.5 block">
+                          Confirmar PIN
+                        </span>
+                        <div className="relative">
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
+                          <input
+                            required
+                            inputMode="numeric"
+                            pattern="\d{4,6}"
+                            minLength={4}
+                            maxLength={6}
+                            value={pinForm.confirmPin}
+                            onChange={(e) =>
+                              setPinForm((f) => ({
+                                ...f,
+                                confirmPin: e.target.value.replace(/\D/g, '').slice(0, 6),
+                              }))
+                            }
+                            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-evently-border bg-white text-sm text-evently-text outline-none focus:border-[#10B981]/50 focus:ring-2 focus:ring-[#10B981]/15 tracking-widest"
+                            placeholder="Repite el PIN"
+                          />
+                        </div>
+                      </label>
+
+                      <label className="block">
+                        <span className="text-xs font-semibold text-evently-muted uppercase tracking-wider mb-1.5 block">
+                          Contraseña actual
+                        </span>
+                        <div className="relative">
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
+                          <input
+                            required
+                            type={showPassword ? 'text' : 'password'}
+                            value={pinForm.password}
+                            onChange={(e) =>
+                              setPinForm((f) => ({ ...f, password: e.target.value }))
+                            }
+                            className="w-full pl-10 pr-11 py-3 rounded-2xl border border-evently-border bg-white text-sm text-evently-text outline-none focus:border-[#10B981]/50 focus:ring-2 focus:ring-[#10B981]/15"
+                            placeholder="Confirma tu contraseña"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword((v) => !v)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-evently-muted hover:text-evently-text"
+                            aria-label={showPassword ? 'Ocultar' : 'Mostrar'}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </label>
+
+                      <motion.button
+                        type="submit"
+                        disabled={loading}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        className="w-full btn-cta py-3.5 rounded-2xl font-semibold text-sm mt-2 disabled:opacity-60 flex items-center justify-center gap-2"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" /> Guardando…
+                          </>
+                        ) : user.hasPin ? (
+                          'Actualizar PIN'
+                        ) : (
+                          'Configurar PIN'
+                        )}
+                      </motion.button>
+                    </>
+                  )}
                 </form>
               )}
             </div>
