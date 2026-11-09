@@ -397,6 +397,14 @@ function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile, onOpenQr, offsetTop =
                           <p className="text-sm font-semibold text-evently-text truncate">{user.name}</p>
                           <p className="text-xs text-evently-muted truncate">{user.email}</p>
                         </div>
+                        {user?.role === 'admin' && (
+                          <a
+                            href="/admin"
+                            className="w-full flex items-center gap-2 px-4 py-3 text-sm text-evently-textSecondary hover:text-evently-text hover:bg-evently-surface transition-colors border-b border-evently-border/60"
+                          >
+                            Panel
+                          </a>
+                        )}
                         <button
                           onClick={openProfile}
                           className="w-full flex items-center gap-2 px-4 py-3 text-sm text-evently-textSecondary hover:text-evently-text hover:bg-evently-surface transition-colors border-b border-evently-border/60"
@@ -479,6 +487,11 @@ function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile, onOpenQr, offsetTop =
                         <p className="text-xs text-evently-muted">{user.email}</p>
                       </div>
                     </div>
+                    {user?.role === 'admin' && (
+                      <a href="/admin" className="flex items-center gap-2 py-2 text-evently-textSecondary hover:text-evently-text">
+                        Panel
+                      </a>
+                    )}
                     <button onClick={openProfile} className="flex items-center gap-2 py-2 text-evently-textSecondary hover:text-evently-text">
                       <UserRound className="w-4 h-4" /> Mi perfil
                     </button>
@@ -558,7 +571,7 @@ function Hero() {
         <div>
           <div className="w-8 h-8 border-2 border-evently-border border-t-evently-text rounded-full animate-spin mx-auto mb-4" />
           <p className="text-evently-text font-semibold">
-            {loading ? 'Cargando eventos desde MySQL…' : 'No hay eventos disponibles'}
+            {loading ? 'Cargando eventos…' : 'No hay eventos disponibles'}
           </p>
           {error && <p className="text-evently-muted text-sm mt-2">{error}</p>}
         </div>
@@ -855,7 +868,7 @@ function CategoriesCarousel({ onSelectCategory }) {
   if (!total) {
     return (
       <p className="text-center text-evently-muted py-12">
-        {loading ? 'Cargando categorías desde MySQL…' : 'No hay categorías disponibles.'}
+        {loading ? 'Cargando categorías…' : 'No hay categorías disponibles.'}
       </p>
     )
   }
@@ -1155,7 +1168,7 @@ function EventsCarousel({ onOpenEvent }) {
   if (!total) {
     return (
       <p className="text-center text-evently-muted py-16">
-        {loading ? 'Cargando eventos desde MySQL…' : 'No hay eventos disponibles.'}
+        {loading ? 'Cargando eventos…' : 'No hay eventos disponibles.'}
       </p>
     )
   }
@@ -1382,7 +1395,7 @@ function MyEventsSection({ onOpenAuth, onOpenEvent }) {
             Mis <span className="text-gradient">eventos</span>
           </h2>
           <p className="text-evently-muted text-sm mt-3 max-w-xl">
-            Esta sección requiere autenticación. Sin sesión válida el servidor responde 401.
+            Los eventos que ya confirmaste.
           </p>
         </Reveal>
 
@@ -1395,8 +1408,7 @@ function MyEventsSection({ onOpenAuth, onOpenEvent }) {
               Acceso restringido
             </h3>
             <p className="text-evently-muted text-sm mb-6 leading-relaxed">
-              Inicia sesión o regístrate para ver tus reservas. Las credenciales se validan
-              en Express y se almacenan hasheadas en MySQL (Laragon).
+              Inicia sesión o regístrate para ver tus reservas.
             </p>
             <button
               type="button"
@@ -1417,10 +1429,6 @@ function MyEventsSection({ onOpenAuth, onOpenEvent }) {
                 <p className="font-semibold text-evently-text">{user?.name}</p>
                 <p className="text-sm text-evently-muted">{user?.email}</p>
               </div>
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#10B981] bg-[#10B981]/10 px-3 py-1.5 rounded-full border border-[#10B981]/20">
-                <BadgeCheck className="w-3.5 h-3.5" />
-                JWT verificado
-              </span>
             </div>
 
             {loading && (
@@ -1437,7 +1445,7 @@ function MyEventsSection({ onOpenAuth, onOpenEvent }) {
                 <Ticket className="w-8 h-8 text-evently-muted mx-auto mb-3" />
                 <p className="text-evently-text font-medium mb-1">Aún no tienes reservas</p>
                 <p className="text-evently-muted text-sm">
-                  Explora eventos y confirma asistencia. Tu sesión ya está protegida.
+                  Explora eventos y confirma tu asistencia.
                 </p>
                 <a
                   href="#eventos"

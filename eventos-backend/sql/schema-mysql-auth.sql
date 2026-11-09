@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
   pin_hash        VARCHAR(255) NULL COMMENT 'PIN 4-6 dígitos hasheado (smartwatch)',
   telefono        VARCHAR(20) NULL,
   ciudad          VARCHAR(80) NOT NULL DEFAULT 'Querétaro',
+  rol             ENUM('usuario','admin') NOT NULL DEFAULT 'usuario',
   activo          TINYINT(1) NOT NULL DEFAULT 1,
   ultimo_acceso   DATETIME NULL,
   creado_en       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

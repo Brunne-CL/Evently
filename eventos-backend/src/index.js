@@ -8,6 +8,8 @@ const { ping } = require('./config/db')
 const { initRedis, getRedis } = require('./config/redis')
 const authRoutes = require('./routes/auth')
 const eventsRoutes = require('./routes/events')
+const adminRoutes = require('./routes/admin')
+const { ensureAdmin } = require('./config/ensureAdmin')
 
 const app = express()
 const PORT = Number(process.env.PORT) || 4000
@@ -71,6 +73,7 @@ app.get('/api/health', async (_req, res) => {
 })
 
 app.use('/api/auth', authRoutes)
+app.use('/api/admin', adminRoutes)
 app.use('/api', eventsRoutes)
 
 app.use((_req, res) => {
@@ -83,6 +86,8 @@ app.use((err, _req, res, _next) => {
 })
 
 async function main() {
+  await ensureAdmin()
+
   if ((process.env.REDIS_URL || '').trim()) {
     await initRedis()
   } else {

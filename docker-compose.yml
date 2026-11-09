@@ -51,6 +51,8 @@ services:
       CORS_ORIGIN: ${PUBLIC_URL}
       BCRYPT_ROUNDS: 12
       REDIS_URL: redis://redis:6379
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@evently.mx}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-EventlyAdmin2026}
     depends_on:
       mysql:
         condition: service_healthy

@@ -100,8 +100,7 @@ export default function DevicePairingModal({ open, onClose }) {
               Enlazar Smart TV
             </h2>
             <p className="text-sm text-evently-textSecondary mb-5 leading-relaxed">
-              Abre <code className="text-xs bg-evently-bg px-1.5 py-0.5 rounded">/tv</code> en
-              tu televisor e introduce este código. TTL: 15 minutos.
+              Abre Evently en el televisor e introduce este código. Dura 15 minutos.
             </p>
 
             {!isAuthenticated && (
@@ -117,10 +116,6 @@ export default function DevicePairingModal({ open, onClose }) {
                   <Link2 className="w-4 h-4" />
                   TV vinculada
                 </div>
-                <p className="text-xs text-emerald-700/90">
-                  Tipo: {bridge?.linkedDeviceType || 'tv'} · ID:{' '}
-                  {bridge?.linkedDeviceId || '—'}
-                </p>
                 <button
                   type="button"
                   onClick={unlink}

@@ -11,6 +11,7 @@ function publicUser(row) {
     ciudad: row.ciudad || 'Querétaro',
     telefono: row.telefono || '',
     hasPin: Boolean(row.pin_hash),
+    role: row.rol === 'admin' ? 'admin' : 'usuario',
   }
 }
 
@@ -72,7 +73,7 @@ async function register(req, res) {
     )
 
     const rows = await query(
-      'SELECT id, nombre, email, ciudad, telefono, pin_hash FROM usuarios WHERE id = :id LIMIT 1',
+      'SELECT id, nombre, email, ciudad, telefono, pin_hash, rol FROM usuarios WHERE id = :id LIMIT 1',
       { id: result.insertId }
     )
     const user = publicUser(rows[0])
@@ -107,7 +108,7 @@ async function login(req, res) {
     }
 
     const rows = await query(
-      `SELECT id, nombre, email, ciudad, telefono, password_hash, pin_hash, activo
+      `SELECT id, nombre, email, ciudad, telefono, password_hash, pin_hash, rol, activo
        FROM usuarios WHERE email = :email LIMIT 1`,
       { email: mail }
     )
@@ -163,7 +164,7 @@ async function pinLogin(req, res) {
     }
 
     const rows = await query(
-      `SELECT id, nombre, email, ciudad, telefono, pin_hash, activo
+      `SELECT id, nombre, email, ciudad, telefono, pin_hash, rol, activo
        FROM usuarios
        WHERE REGEXP_REPLACE(IFNULL(telefono, ''), '[^0-9]', '') = :phone
        LIMIT 1`,
@@ -253,7 +254,7 @@ async function setPin(req, res) {
     })
 
     const updated = await query(
-      `SELECT id, nombre, email, ciudad, telefono, pin_hash FROM usuarios WHERE id = :id LIMIT 1`,
+      `SELECT id, nombre, email, ciudad, telefono, pin_hash, rol FROM usuarios WHERE id = :id LIMIT 1`,
       { id: req.user.id }
     )
 
@@ -291,7 +292,7 @@ async function updateProfile(req, res) {
 
     const phoneDigits = phone.replace(/\D/g, '')
     const current = await query(
-      'SELECT pin_hash FROM usuarios WHERE id = :id LIMIT 1',
+      'SELECT pin_hash, rol FROM usuarios WHERE id = :id LIMIT 1',
       { id: req.user.id }
     )
     if (current[0]?.pin_hash && phoneDigits.length < 7) {
@@ -315,7 +316,7 @@ async function updateProfile(req, res) {
     )
 
     const rows = await query(
-      `SELECT id, nombre, email, ciudad, telefono, pin_hash, activo
+      `SELECT id, nombre, email, ciudad, telefono, pin_hash, rol, activo
        FROM usuarios WHERE id = :id LIMIT 1`,
       { id: req.user.id }
     )
@@ -340,7 +341,7 @@ async function updateProfile(req, res) {
 async function me(req, res) {
   try {
     const rows = await query(
-      `SELECT id, nombre, email, ciudad, telefono, pin_hash, activo
+      `SELECT id, nombre, email, ciudad, telefono, pin_hash, rol, activo
        FROM usuarios WHERE id = :id LIMIT 1`,
       { id: req.user.id }
     )
@@ -490,7 +491,7 @@ async function redeemQrLogin(req, res) {
     }
 
     const rows = await query(
-      `SELECT id, nombre, email, ciudad, telefono, pin_hash, activo
+      `SELECT id, nombre, email, ciudad, telefono, pin_hash, rol, activo
        FROM usuarios WHERE id = :id LIMIT 1`,
       { id: taken.userId }
     )

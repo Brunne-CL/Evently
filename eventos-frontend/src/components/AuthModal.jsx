@@ -14,7 +14,6 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { LOGO_LIGHT } from '../constants/brand.js'
-import QrScanPanel from './QrScanPanel.jsx'
 
 const INITIAL_LOGIN = { email: '', password: '' }
 const INITIAL_REGISTER = {
@@ -25,14 +24,12 @@ const INITIAL_REGISTER = {
   telefono: '',
   pin: '',
 }
-const INITIAL_PIN = { telefono: '', pin: '' }
 
 export default function AuthModal({ open, onClose, initialMode = 'login' }) {
-  const { login, register, loginWithPin } = useAuth()
-  const [mode, setMode] = useState(initialMode)
+  const { login, register } = useAuth()
+  const [mode, setMode] = useState(initialMode === 'register' ? 'register' : 'login')
   const [loginForm, setLoginForm] = useState(INITIAL_LOGIN)
   const [registerForm, setRegisterForm] = useState(INITIAL_REGISTER)
-  const [pinForm, setPinForm] = useState(INITIAL_PIN)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
@@ -40,7 +37,7 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
 
   useEffect(() => {
     if (open) {
-      setMode(initialMode)
+      setMode(initialMode === 'register' ? 'register' : 'login')
       setError('')
       setShowPassword(false)
       setShowConfirmPassword(false)
@@ -69,7 +66,6 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
   const handleClose = () => {
     setLoginForm(INITIAL_LOGIN)
     setRegisterForm(INITIAL_REGISTER)
-    setPinForm(INITIAL_PIN)
     setError('')
     onClose()
   }
@@ -111,24 +107,9 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
     }
   }
 
-  const handlePinLogin = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    try {
-      const result = await loginWithPin(pinForm)
-      if (result.ok) handleClose()
-      else setError(result.error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const titles = {
     login: { h: 'Iniciar sesión', p: 'Accede con tu correo y contraseña' },
-    register: { h: 'Crear cuenta', p: 'Únete a Evently · datos en MySQL (Laragon)' },
-    pin: { h: 'Acceso smartwatch', p: 'Teléfono + PIN de 4 a 6 dígitos' },
-    qr: { h: 'Escanear QR', p: 'Entra con la sesión que ya tienes en la web' },
+    register: { h: 'Crear cuenta', p: 'Regístrate para guardar tus eventos' },
   }
   const t = titles[mode] || titles.login
 
@@ -140,7 +121,7 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6"
         >
           <motion.div
             onClick={handleClose}
@@ -154,7 +135,7 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             role="dialog"
             aria-label={t.h}
-            className="relative w-full max-w-md glass-strong rounded-3xl overflow-hidden shadow-elevated max-h-[90vh] overflow-y-auto"
+            className="relative w-full max-w-md bg-white rounded-3xl overflow-hidden border border-evently-border shadow-elevated max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-evently-border/80 sticky top-0 bg-white/90 backdrop-blur-md z-10">
               <div className="flex items-center gap-3 min-w-0">
@@ -179,33 +160,6 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
             </div>
 
             <div className="px-5 pt-4">
-              <div className="flex rounded-full glass p-1 mb-4 gap-0.5">
-                {[
-                  { id: 'login', label: 'Sesión' },
-                  { id: 'register', label: 'Registro' },
-                  { id: 'pin', label: 'PIN' },
-                  { id: 'qr', label: 'QR' },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => switchMode(tab.id)}
-                    className={`flex-1 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all duration-500 ${
-                      mode === tab.id
-                        ? 'text-white bg-gradient-brand shadow-glow'
-                        : 'text-evently-muted hover:text-evently-text'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              <p className="text-[11px] text-evently-muted mb-4 leading-relaxed">
-                Credenciales con <strong className="text-evently-text">bcrypt</strong> en
-                Express · MySQL (Laragon). Nunca se guardan en texto plano.
-              </p>
-
               {error && (
                 <div className="flex items-start gap-2 mb-4 px-3 py-2.5 rounded-xl text-sm border bg-evently-energy/8 border-evently-energy/25 text-evently-energy">
                   <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -260,13 +214,16 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
                       'Entrar'
                     )}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => switchMode('qr')}
-                    className="w-full text-sm font-medium text-evently-textSecondary hover:text-evently-text"
-                  >
-                    Ya inicié sesión en la computadora: escanear QR
-                  </button>
+                  <p className="text-center text-sm text-evently-muted">
+                    ¿No tienes cuenta?{' '}
+                    <button
+                      type="button"
+                      onClick={() => switchMode('register')}
+                      className="font-semibold text-evently-text hover:underline"
+                    >
+                      Regístrate
+                    </button>
+                  </p>
                 </form>
               )}
 
@@ -392,65 +349,16 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
                       'Crear cuenta'
                     )}
                   </button>
-                </form>
-              )}
-
-              {mode === 'qr' && <QrScanPanel onSuccess={handleClose} />}
-
-              {mode === 'pin' && (
-                <form onSubmit={handlePinLogin} className="space-y-4 pb-5">
-                  <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
-                    <input
-                      type="tel"
-                      inputMode="tel"
-                      required
-                      value={pinForm.telefono}
-                      onChange={(e) =>
-                        setPinForm((f) => ({
-                          ...f,
-                          telefono: e.target.value.replace(/[^\d+\s\-()]/g, '').slice(0, 20),
-                        }))
-                      }
-                      placeholder="Número de teléfono"
-                      className="w-full pl-11 pr-4 py-3 rounded-xl glass text-sm focus:outline-none focus:ring-2 focus:ring-[#10B981] text-evently-text placeholder-evently-muted"
-                    />
-                  </div>
-                  <div className="relative">
-                    <Watch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-evently-muted" />
-                    <input
-                      type="password"
-                      inputMode="numeric"
-                      required
-                      pattern="\d{4,6}"
-                      minLength={4}
-                      maxLength={6}
-                      value={pinForm.pin}
-                      onChange={(e) =>
-                        setPinForm((f) => ({
-                          ...f,
-                          pin: e.target.value.replace(/\D/g, '').slice(0, 6),
-                        }))
-                      }
-                      placeholder="PIN (4–6 dígitos)"
-                      className="w-full pl-11 pr-4 py-3 rounded-xl glass text-sm focus:outline-none focus:ring-2 focus:ring-[#10B981] text-evently-text placeholder-evently-muted tracking-widest"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 rounded-full text-white text-sm font-semibold btn-emerald disabled:opacity-60 flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" /> Verificando...
-                      </>
-                    ) : (
-                      <>
-                        <Watch className="w-4 h-4" /> Entrar con PIN
-                      </>
-                    )}
-                  </button>
+                  <p className="text-center text-sm text-evently-muted">
+                    ¿Ya tienes cuenta?{' '}
+                    <button
+                      type="button"
+                      onClick={() => switchMode('login')}
+                      className="font-semibold text-evently-text hover:underline"
+                    >
+                      Inicia sesión
+                    </button>
+                  </p>
                 </form>
               )}
             </div>

@@ -78,7 +78,7 @@ async function request(path, { method = 'GET', body, auth = false } = {}) {
   } catch {
     return {
       ok: false,
-      error: 'No se pudo conectar con el servidor. ¿Laragon y la API están activos?',
+      error: 'No se pudo conectar con el servidor.',
       offline: true,
     }
   }
@@ -175,6 +175,10 @@ export async function apiUpdateProfile(payload) {
 
 export async function apiMisEventos() {
   return request('/api/auth/mis-eventos', { auth: true })
+}
+
+export async function apiAdminOverview() {
+  return request('/api/admin/overview', { auth: true })
 }
 
 export async function apiCategories() {

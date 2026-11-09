@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { CheckCircle2, Copy, Loader2, QrCode, RefreshCw, Smartphone, X } from 'lucide-react'
+import { CheckCircle2, Copy, Loader2, QrCode, RefreshCw, X } from 'lucide-react'
 import QRCode from 'qrcode'
 import { useAuth } from '../context/AuthContext.jsx'
 import { apiCreateQrLogin, apiQrLoginStatus } from '../lib/api.js'
@@ -146,9 +146,7 @@ export default function QrSessionModal({ open, onClose }) {
 
             <div className="px-5 py-5">
               <p className="text-sm text-evently-textSecondary leading-relaxed mb-4">
-                Copia el enlace, pégalo en la barra de Chrome del emulador y pulsa Enter. Tiene
-                que empezar con http://10.0.2.2. Chrome abre una pantalla corta y de ahí entra
-                la app Evently con tu sesión.
+                Escanea el código con la app Evently para entrar con esta sesión.
               </p>
 
               {error && (
@@ -213,10 +211,6 @@ export default function QrSessionModal({ open, onClose }) {
                 </p>
               )}
 
-              <p className="mt-4 text-[11px] text-evently-muted leading-relaxed flex gap-2">
-                <Smartphone className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                Si Chrome hace una búsqueda de Google, el enlace es el viejo. Genera uno nuevo: el bueno empieza con http://10.0.2.2/abrir.
-              </p>
             </div>
           </motion.div>
         </motion.div>
