@@ -230,16 +230,17 @@ class _WatchHomeScreenState extends State<WatchHomeScreen> {
                 child: Text(
                   time,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: kEventlyInk,
                     fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     height: 1,
+                    letterSpacing: -0.4,
                   ),
                 ),
               ),
               GestureDetector(
                 onTap: _logout,
-                child: const Icon(Icons.logout, size: 12, color: Colors.white38),
+                child: const Icon(Icons.logout, size: 12, color: kEventlyMuted),
               ),
             ],
           ),
@@ -247,7 +248,7 @@ class _WatchHomeScreenState extends State<WatchHomeScreen> {
             alignment: Alignment.centerLeft,
             child: Text(
               _subtitle,
-              style: const TextStyle(color: Colors.white54, fontSize: 8),
+              style: const TextStyle(color: kEventlyMuted, fontSize: 8),
             ),
           ),
           const SizedBox(height: 3),
@@ -282,7 +283,7 @@ class _WatchHomeScreenState extends State<WatchHomeScreen> {
                           _error!,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                            color: Colors.redAccent,
+                            color: Color(0xFF9B3A3A),
                             fontSize: 8,
                           ),
                         ),
@@ -293,7 +294,7 @@ class _WatchHomeScreenState extends State<WatchHomeScreen> {
                               _emptyMessage,
                               textAlign: TextAlign.center,
                               style: const TextStyle(
-                                color: Colors.white38,
+                                color: kEventlyMuted,
                                 fontSize: 9,
                                 height: 1.35,
                               ),
@@ -310,7 +311,7 @@ class _WatchHomeScreenState extends State<WatchHomeScreen> {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 4),
                                   child: Material(
-                                    color: const Color(0xFF161C19),
+                                    color: kEventlyCard,
                                     borderRadius: BorderRadius.circular(999),
                                     child: InkWell(
                                       onTap: () async {
@@ -340,7 +341,7 @@ class _WatchHomeScreenState extends State<WatchHomeScreen> {
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: const TextStyle(
-                                                  color: Colors.white,
+                                                  color: kEventlyInk,
                                                   fontSize: 9,
                                                   fontWeight: FontWeight.w700,
                                                   height: 1.15,
@@ -353,8 +354,8 @@ class _WatchHomeScreenState extends State<WatchHomeScreen> {
                                                   : Icons.chevron_right,
                                               size: 11,
                                               color: confirmed
-                                                  ? const Color(0xFF34D399)
-                                                  : Colors.white38,
+                                                  ? kEventlyGreen
+                                                  : kEventlyMuted,
                                             ),
                                           ],
                                         ),
@@ -383,9 +384,9 @@ class _WatchTabs extends StatelessWidget {
     return Container(
       height: 22,
       decoration: BoxDecoration(
-        color: const Color(0xFF0F1412),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white12),
+        color: kEventlyCard,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: kEventlyLine),
       ),
       child: Row(
         children: [
@@ -425,15 +426,15 @@ class _TabChip extends StatelessWidget {
           duration: const Duration(milliseconds: 160),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF10B981) : Colors.transparent,
-            borderRadius: BorderRadius.circular(999),
+            color: selected ? kEventlyInk : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: selected ? Colors.black : Colors.white60,
+              color: selected ? Colors.white : kEventlyMuted,
               fontSize: 7.5,
               fontWeight: FontWeight.w800,
             ),

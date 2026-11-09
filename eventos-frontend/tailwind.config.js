@@ -8,17 +8,17 @@ export default {
     extend: {
       colors: {
         evently: {
-          bg:            '#F8F5F0',
-          surface:       '#F2EDE6',
-          surface2:      '#EDE8E0',
-          primary:       '#3D5C48',
-          secondary:     '#5F7D65',
-          energy:        '#F43F5E',
-          text:          '#111827',
-          textSecondary: '#374151',
-          muted:         '#6B7280',
-          border:        '#E5E0D8',
-          success:       '#3D5C48',
+          bg:            '#F6F5F2',
+          surface:       '#FFFFFF',
+          surface2:      '#EEECE7',
+          primary:       '#1C1C1C',
+          secondary:     '#3F3F3A',
+          energy:        '#1C1C1C',
+          text:          '#161616',
+          textSecondary: '#3F3F3A',
+          muted:         '#6E6E68',
+          border:        '#E4E2DC',
+          success:       '#2F4A3C',
         },
       },
       fontFamily: {
@@ -69,8 +69,8 @@ export default {
         'glow-energy':'0 0 48px rgba(244, 63, 94, 0.15)',
       },
       backgroundImage: {
-        'gradient-brand': 'linear-gradient(135deg, #3D5C48 0%, #5F7D65 100%)',
-        'gradient-cta':   'linear-gradient(135deg, #F43F5E 0%, #FB7185 100%)',
+        'gradient-brand': 'linear-gradient(135deg, #1C1C1C 0%, #1C1C1C 100%)',
+        'gradient-cta':   'linear-gradient(135deg, #1C1C1C 0%, #1C1C1C 100%)',
         'dot-grid':       'radial-gradient(circle, rgba(17,24,39,0.05) 1px, transparent 1px)',
       },
       transitionTimingFunction: {

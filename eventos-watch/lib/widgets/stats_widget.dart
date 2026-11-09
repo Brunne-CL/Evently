@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'evently_mark.dart';
 
 /// StatsWidget — estadísticas Evently para wearable y dashboard web.
 ///
@@ -34,14 +35,14 @@ class StatsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = compact
         ? [
-            _Stat('Ev', totalEvents, const Color(0xFF10B981)),
-            _Stat('Ok', confirmed, const Color(0xFF3D5C48)),
-            _Stat('♥', favorites, const Color(0xFFF43F5E)),
+            _Stat('Ev', totalEvents, kEventlyInk),
+            _Stat('Ok', confirmed, kEventlyGreen),
+            _Stat('Fav', favorites, kEventlyInk),
           ]
         : [
-            _Stat('Eventos', totalEvents, const Color(0xFF10B981)),
-            _Stat('Confirmados', confirmed, const Color(0xFF3D5C48)),
-            _Stat('Favoritos', favorites, const Color(0xFFF43F5E)),
+            _Stat('Eventos', totalEvents, kEventlyInk),
+            _Stat('Confirmados', confirmed, kEventlyGreen),
+            _Stat('Favoritos', favorites, kEventlyInk),
           ];
 
     return Semantics(
@@ -53,9 +54,9 @@ class StatsWidget extends StatelessWidget {
           vertical: compact ? 4 : 12,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFF121816),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: Colors.white12),
+          color: kEventlyCard,
+          borderRadius: BorderRadius.circular(compact ? 12 : 16),
+          border: Border.all(color: kEventlyLine),
         ),
         child: Row(
           children: [
@@ -101,7 +102,7 @@ class _StatCell extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: Colors.white54,
+            color: kEventlyMuted,
             fontSize: compact ? 7 : 11,
             fontWeight: FontWeight.w600,
           ),

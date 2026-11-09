@@ -97,7 +97,7 @@ class _SplashScreenState extends State<SplashScreen>
               Text(
                 'EVENTLY',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: kEventlyInk,
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.4,
@@ -107,7 +107,7 @@ class _SplashScreenState extends State<SplashScreen>
               Text(
                 'Watch',
                 style: TextStyle(
-                  color: Colors.white54,
+                  color: kEventlyMuted,
                   fontSize: 9,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 1.2,

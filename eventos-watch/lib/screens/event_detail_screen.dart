@@ -68,7 +68,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             alignment: Alignment.centerLeft,
             child: GestureDetector(
               onTap: () => Navigator.pop(context, _confirmed),
-              child: const Icon(Icons.arrow_back, color: Colors.white70, size: 16),
+              child: const Icon(Icons.arrow_back, color: kEventlyInk, size: 16),
             ),
           ),
           const SizedBox(height: 2),
@@ -80,8 +80,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   title,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
+                    color: kEventlyInk,
+                    fontWeight: FontWeight.w800,
                     fontSize: 11,
                     height: 1.2,
                   ),
@@ -103,19 +103,19 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                      color: const Color(0xFFE7EFE9),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: kEventlyLine),
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.check_circle, size: 12, color: Color(0xFF34D399)),
+                        Icon(Icons.check_circle, size: 12, color: kEventlyGreen),
                         SizedBox(width: 6),
                         Text(
                           'Asistencia confirmada',
                           style: TextStyle(
-                            color: Color(0xFF34D399),
+                            color: kEventlyGreen,
                             fontSize: 9,
                             fontWeight: FontWeight.w800,
                           ),
@@ -129,9 +129,9 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     child: ElevatedButton(
                       onPressed: _busy ? null : _confirm,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
-                        foregroundColor: Colors.black,
-                        disabledBackgroundColor: const Color(0xFF10B981).withValues(alpha: 0.4),
+                        backgroundColor: kEventlyInk,
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: const Color(0xFFBDBDB8),
                         elevation: 0,
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
@@ -162,7 +162,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     _message!,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: _confirmed ? const Color(0xFF34D399) : Colors.redAccent,
+                      color: _confirmed ? kEventlyGreen : const Color(0xFF9B3A3A),
                       fontSize: 8,
                     ),
                   ),
@@ -192,13 +192,13 @@ class _InfoRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: const Color(0xFF161C19),
+        color: kEventlyCard,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 13, color: const Color(0xFF34D399)),
+          Icon(icon, size: 13, color: kEventlyInk),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -207,7 +207,7 @@ class _InfoRow extends StatelessWidget {
                 Text(
                   label,
                   style: const TextStyle(
-                    color: Colors.white38,
+                    color: kEventlyMuted,
                     fontSize: 7.5,
                     fontWeight: FontWeight.w600,
                   ),
@@ -216,7 +216,7 @@ class _InfoRow extends StatelessWidget {
                 Text(
                   value,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: kEventlyInk,
                     fontSize: 9.5,
                     fontWeight: FontWeight.w700,
                     height: 1.25,

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'evently_mark.dart';
 
-export 'evently_mark.dart' show EventlyLogo, kEventlyGreen;
+export 'evently_mark.dart';
 
 /// Contenedor para pantallas Wear OS redondas.
 class WatchShell extends StatelessWidget {
@@ -19,7 +19,7 @@ class WatchShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: kEventlyPaper,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final side = math.min(constraints.maxWidth, constraints.maxHeight);
@@ -31,7 +31,7 @@ class WatchShell extends StatelessWidget {
               height: side,
               child: ClipOval(
                 child: ColoredBox(
-                  color: const Color(0xFF0C0F0E),
+                  color: kEventlyPaper,
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(
                       inset * 1.05,
@@ -84,19 +84,19 @@ class WatchField extends StatelessWidget {
         keyboardType: keyboardType,
         obscureText: obscure,
         inputFormatters: inputFormatters,
-        style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.1),
+        style: const TextStyle(color: kEventlyInk, fontSize: 12, height: 1.1),
         cursorColor: kEventlyGreen,
         textAlignVertical: TextAlignVertical.center,
         decoration: InputDecoration(
           isDense: true,
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.white38, fontSize: 11),
+          hintStyle: const TextStyle(color: kEventlyMuted, fontSize: 11),
           filled: true,
-          fillColor: const Color(0xFF1A221E),
+          fillColor: kEventlyCard,
           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(999),
-            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: kEventlyLine),
           ),
         ),
       ),

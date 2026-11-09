@@ -65,11 +65,11 @@ class _LoginScreenState extends State<LoginScreen> {
       final enable = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          backgroundColor: const Color(0xFF121816),
+          backgroundColor: kEventlyPaper,
           title: const Text('¿Usar biometría?', style: TextStyle(fontSize: 14)),
           content: const Text(
             'Desbloquear Evently sin volver a escribir el PIN. El PIN nunca se guarda en el reloj.',
-            style: TextStyle(fontSize: 11, color: Colors.white70),
+            style: TextStyle(fontSize: 11, color: kEventlyMuted),
           ),
           actions: [
             TextButton(
@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
             'Teléfono + PIN',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white54,
+              color: kEventlyMuted,
               fontSize: 8,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.4,
@@ -176,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Center(
               child: GestureDetector(
                 onTap: _busy ? null : _tryBiometricUnlock,
-                child: const Icon(Icons.fingerprint, size: 18, color: Color(0xFF34D399)),
+                child: const Icon(Icons.fingerprint, size: 18, color: kEventlyInk),
               ),
             ),
             const SizedBox(height: 6),
@@ -188,8 +188,8 @@ class _LoginScreenState extends State<LoginScreen> {
               child: FilledButton(
                 onPressed: _busy ? null : _submit,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF34D399),
-                  foregroundColor: const Color(0xFF0C0F0E),
+                  backgroundColor: kEventlyInk,
+                  foregroundColor: Colors.white,
                   padding: EdgeInsets.zero,
                   shape: const StadiumBorder(),
                 ),

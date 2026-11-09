@@ -288,11 +288,7 @@ function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile, onOpenQr, offsetTop =
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: EASE }}
       style={{ top: offsetTop }}
-      className={`fixed left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? 'glass-strong border-b border-evently-border/80 py-3 shadow-soft'
-          : 'bg-evently-bg/80 backdrop-blur-md py-5'
-      }`}
+      className="fixed left-0 right-0 z-50 border-b border-evently-border bg-white py-3"
     >
       <div className="max-w-6xl mx-auto px-5 sm:px-8">
         <div className="flex items-center justify-between gap-6">
@@ -560,7 +556,7 @@ function Hero() {
         className="min-h-[100svh] flex items-center justify-center px-5 text-center"
       >
         <div>
-          <div className="w-10 h-10 border-2 border-[#10B981]/30 border-t-[#10B981] rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-2 border-evently-border border-t-evently-text rounded-full animate-spin mx-auto mb-4" />
           <p className="text-evently-text font-semibold">
             {loading ? 'Cargando eventos desde MySQL…' : 'No hay eventos disponibles'}
           </p>

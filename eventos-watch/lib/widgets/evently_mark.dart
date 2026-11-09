@@ -1,8 +1,13 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-const Color kEventlyGreen = Color(0xFF10B981);
-const Color kEventlyGreenDeep = Color(0xFF3D5C48);
+const Color kEventlyGreen = Color(0xFF2F4A3C);
+const Color kEventlyGreenDeep = Color(0xFF2F4A3C);
+const Color kEventlyInk = Color(0xFF161616);
+const Color kEventlyPaper = Color(0xFFF6F5F2);
+const Color kEventlyMuted = Color(0xFF6E6E68);
+const Color kEventlyLine = Color(0xFFE4E2DC);
+const Color kEventlyCard = Color(0xFFFFFFFF);
 
 /// Logo Evently vectorial (nítido en Wear; no usa PNG pixelado).
 class EventlyLogo extends StatelessWidget {
@@ -59,7 +64,7 @@ class EventlyLogo extends StatelessWidget {
                   TextSpan(
                     text: 'VENTLY',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: kEventlyInk,
                       fontWeight: FontWeight.w900,
                       fontSize: height * 0.72,
                       height: 1,
@@ -138,7 +143,7 @@ class _EventlyMarkPainter extends CustomPainter {
 
     // Acento diagonal
     final accent = Paint()
-      ..color = const Color(0xFF34D399)
+      ..color = kEventlyGreen
       ..strokeWidth = 1.8
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke

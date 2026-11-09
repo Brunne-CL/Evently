@@ -31,9 +31,8 @@ class EventlyWatchApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: isDashboard ? Brightness.light : Brightness.dark,
-        colorSchemeSeed: const Color(0xFF34D399),
-        scaffoldBackgroundColor:
-            isDashboard ? const Color(0xFFF8F5F0) : Colors.black,
+        colorSchemeSeed: const Color(0xFF2F4A3C),
+        scaffoldBackgroundColor: const Color(0xFFF6F5F2),
         useMaterial3: true,
       ),
       home: isDashboard ? const _DashboardLoader() : const SplashScreen(),

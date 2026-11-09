@@ -17,8 +17,6 @@
 
   body {
     @apply bg-evently-bg text-evently-text font-sans antialiased overflow-x-hidden;
-    background-image: radial-gradient(circle, rgba(17, 24, 39, 0.035) 1px, transparent 1px);
-    background-size: 28px 28px;
   }
 
   ::selection {
@@ -36,10 +34,8 @@
   }
 
   .glass-strong {
-    @apply bg-white/75 backdrop-blur-2xl border border-evently-border/80;
-    box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.95),
-      0 8px 40px rgba(17, 24, 39, 0.06);
+    @apply bg-white border border-evently-border;
+    box-shadow: 0 16px 40px rgba(22, 22, 22, 0.08);
   }
 
   .text-gradient {
@@ -53,34 +49,30 @@
   }
 
   .btn-cta {
-    @apply bg-evently-energy text-white font-semibold transition-all duration-500;
-    box-shadow: 0 4px 24px rgba(244, 63, 94, 0.22);
+    @apply bg-evently-text text-white font-semibold transition-colors duration-200;
+    box-shadow: none;
   }
 
   .btn-cta:hover {
-    box-shadow: 0 8px 32px rgba(244, 63, 94, 0.32);
-    transform: translateY(-2px);
+    background: #2a2a2a;
+    transform: none;
   }
 
   .btn-primary {
-    @apply bg-evently-text text-white font-semibold transition-all duration-500;
-    box-shadow: 0 4px 20px rgba(17, 24, 39, 0.12);
+    @apply bg-evently-text text-white font-semibold transition-colors duration-200;
   }
 
   .btn-primary:hover {
-    box-shadow: 0 8px 28px rgba(17, 24, 39, 0.2);
-    transform: translateY(-2px);
+    background: #2a2a2a;
   }
 
   .btn-emerald {
-    @apply text-white font-semibold transition-all duration-500;
-    background: linear-gradient(135deg, #3D5C48 0%, #5F7D65 100%);
-    box-shadow: 0 4px 24px rgba(61, 92, 72, 0.28);
+    @apply text-white font-semibold transition-colors duration-200;
+    background: #1c1c1c;
   }
 
   .btn-emerald:hover {
-    box-shadow: 0 8px 36px rgba(61, 92, 72, 0.38);
-    transform: translateY(-2px);
+    background: #2a2a2a;
   }
 
   .btn-outline {
@@ -94,16 +86,13 @@
   }
 
   .card-premium {
-    @apply rounded-3xl bg-white border border-evently-border/60 transition-all duration-700 ease-out overflow-hidden;
-    box-shadow: 0 4px 24px rgba(17, 24, 39, 0.04);
+    @apply rounded-2xl bg-white border border-evently-border transition-colors duration-200 overflow-hidden;
+    box-shadow: none;
   }
 
   .card-premium:hover {
-    box-shadow:
-      0 24px 64px rgba(61, 92, 72, 0.1),
-      0 8px 24px rgba(17, 24, 39, 0.05);
-    transform: translateY(-8px);
-    border-color: rgba(61, 92, 72, 0.22);
+    border-color: #cfcbc3;
+    transform: none;
   }
 
   .card-category {
@@ -128,30 +117,24 @@
 
   .category-card-featured {
     border-width: 2px;
-    border-color: #10B981;
+    border-color: #1c1c1c;
     box-shadow:
       0 8px 32px rgba(16, 185, 129, 0.12),
       0 2px 12px rgba(17, 24, 39, 0.04);
   }
 
   .category-card:hover {
-    transform: translateY(-8px) scale(1.025);
-    border-color: #10B981;
-    box-shadow:
-      0 20px 48px rgba(16, 185, 129, 0.18),
-      0 8px 24px rgba(17, 24, 39, 0.06);
+    transform: none;
+    border-color: #1c1c1c;
   }
 
   .category-icon-ring {
-    @apply w-[4.5rem] h-[4.5rem] rounded-full flex items-center justify-center flex-shrink-0;
-    background: #10B981;
-    box-shadow:
-      0 0 0 6px #ffffff,
-      0 8px 24px rgba(16, 185, 129, 0.28);
+    @apply w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0;
+    background: #1c1c1c;
   }
 
   .text-category-accent {
-    color: #10B981;
+    color: #1c1c1c;
   }
 
   /* ——— Buscador premium ——— */
@@ -181,9 +164,9 @@
 
   .search-events-badge {
     @apply inline-flex items-center flex-shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full;
-    color: #10B981;
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.18);
+    color: #1c1c1c;
+    background: #f3f2ee;
+    border: 1px solid #e4e2dc;
   }
 
   .search-category-row {
@@ -204,8 +187,7 @@
 
   .search-icon-ring-sm {
     @apply w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0;
-    background: #10B981;
-    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.28);
+    background: #1c1c1c;
   }
 
   .search-step-card {
@@ -237,8 +219,7 @@
   }
 
   .ambient-orb {
-    @apply absolute rounded-full pointer-events-none;
-    filter: blur(80px);
+    display: none;
   }
 
   .hero-image-mask {
