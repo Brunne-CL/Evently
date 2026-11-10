@@ -14,8 +14,22 @@ export async function setToken(token) {
 
 export function parseQrCode(raw) {
   const value = String(raw || '').trim()
-  const fromQuery = value.match(/[?&]qr=([A-Za-z0-9_-]{20,128})/)
+  if (!value) return ''
+
+  const fromQuery = value.match(/[?&#]qr=([A-Za-z0-9_-]{20,128})/)
   if (fromQuery) return fromQuery[1]
+
+  try {
+    const url = new URL(value)
+    const code = url.searchParams.get('qr')
+    if (code && /^[A-Za-z0-9_-]{20,128}$/.test(code)) return code
+  } catch {
+    // No es una URL absoluta (puede ser evently:// o solo el código).
+  }
+
+  const fromIntent = value.match(/qr=([A-Za-z0-9_-]{20,128})/)
+  if (fromIntent) return fromIntent[1]
+
   if (/^[A-Za-z0-9_-]{20,128}$/.test(value)) return value
   return ''
 }

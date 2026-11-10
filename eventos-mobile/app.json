@@ -25,6 +25,12 @@
     "plugins": [
       "expo-secure-store",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Evently necesita la cámara para escanear el código QR e iniciar sesión."
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "android": {

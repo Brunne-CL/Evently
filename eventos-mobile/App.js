@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   FlatList,
   Linking,
+  Modal,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -12,6 +13,7 @@ import {
   TextInput,
   View,
 } from 'react-native'
+import { CameraView, useCameraPermissions } from 'expo-camera'
 import { api, getToken, parseQrCode, setToken } from './src/api'
 
 const INK = '#161616'
@@ -123,10 +125,10 @@ function AuthScreen({ onAuthed }) {
     confirmPassword: '',
     telefono: '',
     pin: '',
-    qr: '',
   })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [scanning, setScanning] = useState(false)
 
   function set(key, value) {
     setForm((current) => ({ ...current, [key]: value }))
@@ -156,64 +158,134 @@ function AuthScreen({ onAuthed }) {
     onAuthed(data)
   }
 
-  async function redeem() {
-    const code = parseQrCode(form.qr)
+  async function redeemFromRaw(raw) {
+    const code = parseQrCode(raw)
     if (!code) {
-      setError('Pega el código o el enlace del QR de la web.')
-      return
+      setError('Ese código QR no es de Evently.')
+      return false
     }
     setBusy(true)
     setError('')
     const data = await api('/api/auth/qr-login/redeem', { method: 'POST', body: { code } })
     setBusy(false)
     if (!data.ok || !data.token) {
-      setError(data.error || 'El código no es válido.')
-      return
+      setError(data.error || 'El código no es válido o ya se usó.')
+      return false
     }
     onAuthed(data)
+    return true
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.auth} keyboardShouldPersistTaps="handled">
-      <Text style={styles.kicker}>Querétaro</Text>
-      <Text style={styles.title}>Evently</Text>
-      <Text style={styles.lead}>Eventos en un solo lugar. Esta app habla con la instancia, no con tu computadora.</Text>
+    <>
+      <ScrollView contentContainerStyle={styles.auth} keyboardShouldPersistTaps="handled">
+        <Text style={styles.kicker}>Querétaro</Text>
+        <Text style={styles.title}>Evently</Text>
+        <Text style={styles.lead}>Eventos en un solo lugar. Esta app habla con la instancia, no con tu computadora.</Text>
 
-      <View style={styles.switch}>
-        <Tab label="Entrar" active={mode === 'login'} onPress={() => setMode('login')} />
-        <Tab label="Crear cuenta" active={mode === 'register'} onPress={() => setMode('register')} />
-        <Tab label="QR" active={mode === 'qr'} onPress={() => setMode('qr')} />
+        <View style={styles.switch}>
+          <Tab label="Entrar" active={mode === 'login'} onPress={() => setMode('login')} />
+          <Tab label="Crear cuenta" active={mode === 'register'} onPress={() => setMode('register')} />
+        </View>
+
+        {mode === 'register' && (
+          <Field label="Nombre" value={form.name} onChangeText={(v) => set('name', v)} />
+        )}
+        <Field label="Correo" value={form.email} onChangeText={(v) => set('email', v)} keyboardType="email-address" />
+        <Field label="Contraseña" value={form.password} onChangeText={(v) => set('password', v)} secure />
+        {mode === 'register' && (
+          <>
+            <Field label="Confirmar contraseña" value={form.confirmPassword} onChangeText={(v) => set('confirmPassword', v)} secure />
+            <Field label="Teléfono" value={form.telefono} onChangeText={(v) => set('telefono', v)} keyboardType="phone-pad" />
+            <Field label="PIN del reloj (4 a 6)" value={form.pin} onChangeText={(v) => set('pin', v)} keyboardType="number-pad" secure />
+          </>
+        )}
+        {!!error && <Text style={styles.error}>{error}</Text>}
+        <Pressable style={styles.button} onPress={submit} disabled={busy}>
+          <Text style={styles.buttonText}>
+            {busy ? 'Espera…' : mode === 'register' ? 'Crear cuenta' : 'Entrar'}
+          </Text>
+        </Pressable>
+        {mode === 'login' && (
+          <Pressable
+            style={styles.scanButton}
+            onPress={() => {
+              setError('')
+              setScanning(true)
+            }}
+            disabled={busy}
+          >
+            <Text style={styles.scanButtonText}>Escanear</Text>
+          </Pressable>
+        )}
+      </ScrollView>
+      <QrScanner
+        open={scanning}
+        busy={busy}
+        onClose={() => setScanning(false)}
+        onScan={async (raw) => {
+          const ok = await redeemFromRaw(raw)
+          if (ok) setScanning(false)
+        }}
+      />
+    </>
+  )
+}
+
+function QrScanner({ open, busy, onClose, onScan }) {
+  const [permission, requestPermission] = useCameraPermissions()
+  const locked = useRef(false)
+
+  useEffect(() => {
+    if (!open) {
+      locked.current = false
+      return
+    }
+    if (permission && !permission.granted) requestPermission()
+  }, [open, permission, requestPermission])
+
+  if (!open) return null
+
+  return (
+    <Modal visible animationType="slide" onRequestClose={onClose}>
+      <View style={styles.scanner}>
+        <SafeAreaView style={styles.scannerTop}>
+          <Text style={styles.scannerTitle}>Escanear QR</Text>
+          <Text style={styles.scannerLead}>Apunta al código de la web para entrar.</Text>
+        </SafeAreaView>
+
+        {!permission?.granted ? (
+          <View style={styles.scannerCenter}>
+            <Text style={styles.scannerLead}>Necesitamos permiso para usar la cámara.</Text>
+            <Pressable style={styles.button} onPress={requestPermission}>
+              <Text style={styles.buttonText}>Permitir cámara</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <CameraView
+            style={styles.camera}
+            facing="back"
+            barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+            onBarcodeScanned={({ data }) => {
+              if (locked.current || busy) return
+              locked.current = true
+              onScan(data).finally(() => {
+                setTimeout(() => {
+                  locked.current = false
+                }, 1500)
+              })
+            }}
+          />
+        )}
+
+        <View style={styles.scannerBottom}>
+          {busy && <ActivityIndicator color="#fff" style={{ marginBottom: 12 }} />}
+          <Pressable style={styles.ghostLight} onPress={onClose} disabled={busy}>
+            <Text style={styles.ghostLightText}>Cerrar</Text>
+          </Pressable>
+        </View>
       </View>
-
-      {mode === 'register' && (
-        <Field label="Nombre" value={form.name} onChangeText={(v) => set('name', v)} />
-      )}
-      {mode !== 'qr' && (
-        <>
-          <Field label="Correo" value={form.email} onChangeText={(v) => set('email', v)} keyboardType="email-address" />
-          <Field label="Contraseña" value={form.password} onChangeText={(v) => set('password', v)} secure />
-        </>
-      )}
-      {mode === 'register' && (
-        <>
-          <Field label="Confirmar contraseña" value={form.confirmPassword} onChangeText={(v) => set('confirmPassword', v)} secure />
-          <Field label="Teléfono" value={form.telefono} onChangeText={(v) => set('telefono', v)} keyboardType="phone-pad" />
-          <Field label="PIN del reloj (4 a 6)" value={form.pin} onChangeText={(v) => set('pin', v)} keyboardType="number-pad" secure />
-        </>
-      )}
-      {mode === 'qr' && (
-        <Field
-          label="Código o enlace del QR"
-          value={form.qr}
-          onChangeText={(v) => set('qr', v)}
-          multiline
-        />
-      )}
-      {!!error && <Text style={styles.error}>{error}</Text>}
-      <Pressable style={styles.button} onPress={mode === 'qr' ? redeem : submit} disabled={busy}>
-        <Text style={styles.buttonText}>{busy ? 'Espera…' : mode === 'qr' ? 'Canjear' : mode === 'register' ? 'Crear cuenta' : 'Entrar'}</Text>
-      </Pressable>
-    </ScrollView>
+    </Modal>
   )
 }
 
@@ -462,6 +534,25 @@ const styles = StyleSheet.create({
   inputMulti: { minHeight: 88, textAlignVertical: 'top' },
   button: { backgroundColor: INK, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
   buttonText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  scanButton: {
+    marginTop: 10,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: LINE,
+    backgroundColor: CARD,
+  },
+  scanButtonText: { color: INK, fontWeight: '600', fontSize: 15 },
+  scanner: { flex: 1, backgroundColor: '#000' },
+  scannerTop: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 8 },
+  scannerTitle: { color: '#fff', fontSize: 22, fontWeight: '700' },
+  scannerLead: { color: 'rgba(255,255,255,0.7)', marginTop: 4, fontSize: 14 },
+  scannerCenter: { flex: 1, justifyContent: 'center', padding: 24 },
+  camera: { flex: 1 },
+  scannerBottom: { padding: 20, paddingBottom: 28 },
+  ghostLight: { paddingVertical: 14, alignItems: 'center' },
+  ghostLightText: { color: '#fff', fontSize: 15 },
   ghost: { paddingVertical: 14, alignItems: 'center' },
   ghostText: { color: MUTED, fontSize: 15 },
   error: { color: '#9B3A3A', marginBottom: 8 },
