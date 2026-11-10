@@ -4,6 +4,8 @@
 --  Depende de: schema-v1.0.0-mysql.sql  O  schema-mysql-auth.sql
 -- ============================================================
 
+SET NAMES utf8mb4;
+
 USE evently_db;
 
 CREATE TABLE IF NOT EXISTS esquema_versiones (

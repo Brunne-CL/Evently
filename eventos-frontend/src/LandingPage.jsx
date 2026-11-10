@@ -45,11 +45,13 @@ import {
   Lock,
   UserRound,
   QrCode,
+  LifeBuoy,
 } from 'lucide-react'
 import { useAuth } from './context/AuthContext.jsx'
 import { useEventData } from './context/EventDataContext.jsx'
 import AuthModal from './components/AuthModal.jsx'
 import QrSessionModal from './components/QrSessionModal.jsx'
+import SupportModal from './components/SupportModal.jsx'
 import EventDetailModal from './components/EventDetailModal.jsx'
 import ProfileModal from './components/ProfileModal.jsx'
 import PromoBanner from './components/PromoBanner.jsx'
@@ -234,7 +236,7 @@ function Reveal({ children, className = '', delay = 0 }) {
 
 const EVENT_ROTATE_MS = 4000
 
-function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile, onOpenQr, offsetTop = 0 }) {
+function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile, onOpenQr, onOpenSupport, offsetTop = 0 }) {
   const { user, logout, isAuthenticated } = useAuth()
   const { totalEvents } = useEventData()
   const eventsBadge = formatEventsBadge(totalEvents)
@@ -342,6 +344,14 @@ function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile, onOpenQr, offsetTop =
                 </a>
               )
             })}
+            <button
+              type="button"
+              onClick={onOpenSupport}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-evently-textSecondary hover:text-evently-text transition-colors"
+            >
+              <LifeBuoy className="w-4 h-4" />
+              Soporte
+            </button>
             {!isAuthenticated ? (
               <>
                 <button
@@ -468,6 +478,13 @@ function Navbar({ onOpenSearch, onOpenAuth, onOpenProfile, onOpenQr, offsetTop =
                   {link.label}
                 </motion.a>
               ))}
+              <button
+                type="button"
+                onClick={() => { setMobileOpen(false); onOpenSupport?.() }}
+                className="flex items-center gap-2 text-left text-evently-text font-medium py-3 text-lg"
+              >
+                <LifeBuoy className="w-5 h-5" /> Soporte
+              </button>
               <div className="pt-6 flex flex-col gap-3">
                 {!isAuthenticated ? (
                   <>
@@ -1949,7 +1966,7 @@ function PoliciesModal({ open, onClose, activePolicy }) {
   )
 }
 
-function Footer() {
+function Footer({ onOpenSupport }) {
   const [policiesOpen, setPoliciesOpen] = useState(false)
   const [activePolicy, setActivePolicy] = useState('terminos')
 
@@ -2011,6 +2028,16 @@ function Footer() {
                 </div>
                 <span className="text-sm">eventrly@gmail.com</span>
               </a>
+              <button
+                type="button"
+                onClick={onOpenSupport}
+                className="mt-3 flex items-center gap-3 text-evently-textSecondary hover:text-evently-primary transition-colors duration-500 group"
+              >
+                <div className="w-10 h-10 rounded-full glass flex items-center justify-center group-hover:shadow-glow transition-all duration-500">
+                  <LifeBuoy className="w-4 h-4" />
+                </div>
+                <span className="text-sm">Reportar un problema</span>
+              </button>
             </div>
 
             <div>
@@ -2596,6 +2623,7 @@ export default function LandingPage() {
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState('login')
   const [qrOpen, setQrOpen] = useState(false)
+  const [supportOpen, setSupportOpen] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [profileOpen, setProfileOpen] = useState(false)
   const [bannerVisible, setBannerVisible] = useState(false)
@@ -2654,6 +2682,7 @@ export default function LandingPage() {
           onOpenAuth={openAuth}
           onOpenProfile={() => setProfileOpen(true)}
           onOpenQr={() => setQrOpen(true)}
+          onOpenSupport={() => setSupportOpen(true)}
           offsetTop={bannerOffset}
         />
         <Hero />
@@ -2662,7 +2691,7 @@ export default function LandingPage() {
         <MyEventsSection onOpenAuth={openAuth} onOpenEvent={openEvent} />
         <HowItWorks />
         <SmartwatchCTA />
-        <Footer />
+        <Footer onOpenSupport={() => setSupportOpen(true)} />
         <BackToTop />
         <PromoPopup onCta={scrollToEvents} />
         <NotificationHost />
@@ -2678,6 +2707,7 @@ export default function LandingPage() {
           initialMode={authMode}
         />
         <QrSessionModal open={qrOpen} onClose={() => setQrOpen(false)} />
+        <SupportModal open={supportOpen} onClose={() => setSupportOpen(false)} />
         <ProfileHost
           open={profileOpen}
           onClose={() => setProfileOpen(false)}

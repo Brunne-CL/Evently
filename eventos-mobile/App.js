@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   ActivityIndicator,
   FlatList,
+  Linking,
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -40,15 +41,37 @@ export default function App() {
     setReady(true)
   }, [])
 
-  useEffect(() => {
-    loadMe()
-  }, [loadMe])
-
-  async function onAuthed(data) {
+  const onAuthed = useCallback(async (data) => {
     await setToken(data.token)
     setUser(data.user)
     setTab('eventos')
-  }
+  }, [])
+
+  // El QR de la web abre evently://login?qr=CODIGO y aquí se canjea por la sesión.
+  const redeemLink = useCallback(
+    async (url) => {
+      const code = parseQrCode(url)
+      if (!code) return
+      const data = await api('/api/auth/qr-login/redeem', { method: 'POST', body: { code } })
+      if (data.ok && data.token) await onAuthed(data)
+    },
+    [onAuthed]
+  )
+
+  useEffect(() => {
+    let active = true
+    async function start() {
+      await loadMe()
+      const initial = await Linking.getInitialURL()
+      if (active && initial) await redeemLink(initial)
+    }
+    start()
+    const sub = Linking.addEventListener('url', ({ url }) => redeemLink(url))
+    return () => {
+      active = false
+      sub.remove()
+    }
+  }, [loadMe, redeemLink])
 
   async function logout() {
     await api('/api/auth/logout', { method: 'POST', auth: true })
@@ -299,6 +322,9 @@ function Account({ user, onUser, onLogout }) {
   const [pin, setPin] = useState('')
   const [password, setPassword] = useState('')
   const [note, setNote] = useState('')
+  const [subject, setSubject] = useState('')
+  const [message, setMessage] = useState('')
+  const [supportNote, setSupportNote] = useState('')
 
   async function savePin() {
     const profile = await api('/api/auth/profile', {
@@ -320,6 +346,22 @@ function Account({ user, onUser, onLogout }) {
     if (data.ok && data.user) onUser(data.user)
   }
 
+  async function sendSupport() {
+    setSupportNote('')
+    const data = await api('/api/support', {
+      method: 'POST',
+      auth: true,
+      body: { subject, message },
+    })
+    if (data.ok) {
+      setSubject('')
+      setMessage('')
+      setSupportNote('Recibimos tu reporte.')
+      return
+    }
+    setSupportNote(data.error || 'No se pudo enviar el reporte.')
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.list}>
       <Text style={styles.section}>Cuenta</Text>
@@ -337,6 +379,23 @@ function Account({ user, onUser, onLogout }) {
       <Pressable style={styles.button} onPress={savePin}>
         <Text style={styles.buttonText}>Guardar PIN</Text>
       </Pressable>
+
+      <Text style={[styles.section, { marginTop: 16 }]}>Soporte</Text>
+      <Text style={styles.muted}>Cuéntanos qué problema tuviste con el sitio.</Text>
+      <Text style={styles.fieldLabel}>Asunto</Text>
+      <TextInput style={styles.input} value={subject} onChangeText={setSubject} />
+      <Text style={styles.fieldLabel}>Descripción</Text>
+      <TextInput
+        style={[styles.input, styles.inputMulti]}
+        value={message}
+        onChangeText={setMessage}
+        multiline
+      />
+      {!!supportNote && <Text style={styles.note}>{supportNote}</Text>}
+      <Pressable style={styles.button} onPress={sendSupport}>
+        <Text style={styles.buttonText}>Enviar reporte</Text>
+      </Pressable>
+
       <Pressable style={styles.ghost} onPress={onLogout}>
         <Text style={styles.ghostText}>Cerrar sesión</Text>
       </Pressable>

@@ -4,6 +4,9 @@
 --                5 Deportes · 6 Culturales · 7 Meetups · 8 Comunitarios
 -- ============================================================
 
+-- Sin esto el cliente del contenedor lee el archivo como latin1 y rompe los acentos.
+SET NAMES utf8mb4;
+
 USE evently_db;
 
 INSERT INTO eventos

@@ -9,7 +9,9 @@ const { initRedis, getRedis } = require('./config/redis')
 const authRoutes = require('./routes/auth')
 const eventsRoutes = require('./routes/events')
 const adminRoutes = require('./routes/admin')
+const supportRoutes = require('./routes/support')
 const { ensureAdmin } = require('./config/ensureAdmin')
+const { ensureSchema } = require('./config/ensureSchema')
 
 const app = express()
 const PORT = Number(process.env.PORT) || 4000
@@ -74,6 +76,7 @@ app.get('/api/health', async (_req, res) => {
 
 app.use('/api/auth', authRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/support', supportRoutes)
 app.use('/api', eventsRoutes)
 
 app.use((_req, res) => {
@@ -87,6 +90,7 @@ app.use((err, _req, res, _next) => {
 
 async function main() {
   await ensureAdmin()
+  await ensureSchema()
 
   if ((process.env.REDIS_URL || '').trim()) {
     await initRedis()

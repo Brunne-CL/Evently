@@ -8,6 +8,9 @@
 --  3. Verifica: USE evently_db; SHOW TABLES;
 -- ============================================================
 
+-- Sin esto el cliente del contenedor lee el archivo como latin1 y rompe los acentos.
+SET NAMES utf8mb4;
+
 CREATE DATABASE IF NOT EXISTS evently_db
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
@@ -108,6 +111,24 @@ CREATE TABLE IF NOT EXISTS favoritos (
   CONSTRAINT fk_favoritos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
   CONSTRAINT fk_favoritos_evento  FOREIGN KEY (evento_id)  REFERENCES eventos(id)  ON DELETE CASCADE,
   UNIQUE KEY uq_favorito_usuario_evento (usuario_id, evento_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ────────────────────────────────────────────────────────────
+-- TABLA: soporte_tickets (reportes enviados desde el sitio)
+-- La API también la crea al arrancar si no existe.
+-- ────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS soporte_tickets (
+  id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  usuario_id   INT UNSIGNED NULL,
+  nombre       VARCHAR(100) NOT NULL,
+  email        VARCHAR(255) NOT NULL,
+  asunto       VARCHAR(150) NOT NULL,
+  mensaje      TEXT NOT NULL,
+  estado       ENUM('pendiente','solucionado') NOT NULL DEFAULT 'pendiente',
+  creado_en    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  resuelto_en  DATETIME NULL,
+  KEY idx_soporte_estado (estado),
+  CONSTRAINT fk_soporte_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ────────────────────────────────────────────────────────────

@@ -21,6 +21,17 @@ async function requireAdmin(req, res, next) {
   }
 }
 
-router.get('/overview', requireAuth, requireAdmin, ctrl.overview)
+router.use(requireAuth, requireAdmin)
+
+router.get('/overview', ctrl.overview)
+
+router.post('/users', ctrl.createUser)
+router.patch('/users/:id', ctrl.updateUser)
+router.patch('/users/:id/active', ctrl.setUserActive)
+
+router.post('/events', ctrl.createEvent)
+router.patch('/events/:id', ctrl.updateEvent)
+
+router.patch('/support/:id', ctrl.setTicketSolved)
 
 module.exports = router

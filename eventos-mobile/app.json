@@ -2,6 +2,7 @@
   "expo": {
     "name": "Evently",
     "slug": "evently",
+    "scheme": "evently",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,7 +11,7 @@
       "supportsTablet": true
     },
     "android": {
-      "usesCleartextTraffic": true,
+      "package": "mx.edu.uteq.evently",
       "adaptiveIcon": {
         "backgroundColor": "#F6F5F2",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -22,7 +23,15 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
     ]
   }
 }

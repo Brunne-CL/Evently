@@ -181,6 +181,36 @@ export async function apiAdminOverview() {
   return request('/api/admin/overview', { auth: true })
 }
 
+export async function apiAdminCreateUser(payload) {
+  return request('/api/admin/users', { method: 'POST', body: payload, auth: true })
+}
+
+export async function apiAdminUpdateUser(id, payload) {
+  return request(`/api/admin/users/${id}`, { method: 'PATCH', body: payload, auth: true })
+}
+
+/** Baja lógica (active: false) o reactivación (active: true). */
+export async function apiAdminSetUserActive(id, active) {
+  return request(`/api/admin/users/${id}/active`, { method: 'PATCH', body: { active }, auth: true })
+}
+
+export async function apiAdminCreateEvent(payload) {
+  return request('/api/admin/events', { method: 'POST', body: payload, auth: true })
+}
+
+export async function apiAdminUpdateEvent(id, payload) {
+  return request(`/api/admin/events/${id}`, { method: 'PATCH', body: payload, auth: true })
+}
+
+export async function apiAdminSetTicketSolved(id, solved) {
+  return request(`/api/admin/support/${id}`, { method: 'PATCH', body: { solved }, auth: true })
+}
+
+/** Reporte de un problema. Si hay sesión, el servidor toma nombre y correo de la cuenta. */
+export async function apiSendSupport(payload) {
+  return request('/api/support', { method: 'POST', body: payload, auth: true })
+}
+
 export async function apiCategories() {
   return request('/api/categories')
 }

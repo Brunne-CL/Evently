@@ -1,6 +1,11 @@
 const mysql = require('mysql2/promise')
 require('dotenv').config()
 
+// Las fechas de los eventos se guardan como hora local de Querétaro (UTC-6, sin horario de verano).
+// Sin esto el contenedor las lee como UTC y la web las muestra seis horas antes.
+const rawTimezone = (process.env.DB_TIMEZONE || '').trim()
+const DB_TIMEZONE = /^[+-]\d{2}:\d{2}$/.test(rawTimezone) ? rawTimezone : '-06:00'
+
 const pool = mysql.createPool({
   host: process.env.DB_HOST || '127.0.0.1',
   port: Number(process.env.DB_PORT) || 3306,
@@ -11,6 +16,12 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   namedPlaceholders: true,
+  timezone: DB_TIMEZONE,
+})
+
+// NOW() y CURRENT_TIMESTAMP usan la misma zona que las fechas que escribe la API.
+pool.on('connection', (connection) => {
+  connection.query(`SET time_zone = '${DB_TIMEZONE}'`)
 })
 
 async function query(sql, params = {}) {
