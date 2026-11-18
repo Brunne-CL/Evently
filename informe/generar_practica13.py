@@ -95,7 +95,7 @@ def main():
             ["AUT-05", "Unitaria e integración: no repetir un 400; registro 201 y 409", "Aprobada"],
             ["AUT-06", "Persistencia: 401 sin token, JSON en 400, mensaje si no hay red", "Aprobada"],
             ["AUT-07", "CI del primer push", "Exitosa"],
-            ["AUT-08", "CI del segundo push", "Se comprueba al subir este informe"],
+            ["AUT-08", "CI del segundo push", "Exitosa"],
         ],
     )
 
@@ -106,7 +106,7 @@ def main():
     )
     parrafo(
         doc,
-        "El segundo push sube este informe. Su resultado se anota en cuanto GitHub termina esa corrida.",
+        "El segundo push, el de este informe en el commit 084caf8, también terminó en success: https://github.com/Brunne-CL/Evently/actions/runs/44226206075. Volvió a ejecutar npm test en main y no dejó pruebas fallidas.",
     )
 
     titulo(doc, "Conclusión")
