@@ -86,6 +86,9 @@ async function register(req, res) {
       expiresIn: process.env.JWT_EXPIRES_IN || '8h',
     })
   } catch (err) {
+    if (err && err.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ ok: false, error: 'Ya existe una cuenta con ese correo.' })
+    }
     console.error('[auth/register]', err.message)
     return res.status(500).json({ ok: false, error: 'Error al registrar. Intenta de nuevo.' })
   }

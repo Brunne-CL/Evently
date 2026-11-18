@@ -84,8 +84,11 @@ app.use((_req, res) => {
 })
 
 app.use((err, _req, res, _next) => {
+  if (err.type === 'entity.parse.failed' || (err instanceof SyntaxError && err.status === 400)) {
+    return res.status(400).json({ ok: false, error: 'El cuerpo JSON no es válido.' })
+  }
   console.error('[unhandled]', err)
-  res.status(500).json({ ok: false, error: 'Error interno del servidor.' })
+  return res.status(500).json({ ok: false, error: 'Error interno del servidor.' })
 })
 
 async function main() {
@@ -105,7 +108,11 @@ async function main() {
   })
 }
 
-main().catch((err) => {
-  console.error('[startup]', err)
-  process.exit(1)
-})
+module.exports = app
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('[startup]', err)
+    process.exit(1)
+  })
+}

@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store'
+import { consultarConReintento } from './resiliencia'
 
 export const API_BASE = 'http://34.200.232.137'
 const TOKEN_KEY = 'evently_token'
@@ -34,7 +35,13 @@ export function parseQrCode(raw) {
   return ''
 }
 
-export async function api(path, { method = 'GET', body, auth = false } = {}) {
+export async function api(path, { method = 'GET', body, auth = false, timeoutMs = 8000 } = {}) {
+  const ejecutar = () => llamarUnaVez(path, { method, body, auth, timeoutMs })
+  if (method !== 'GET') return ejecutar()
+  return consultarConReintento(ejecutar, { intentos: 3 })
+}
+
+async function llamarUnaVez(path, { method, body, auth, timeoutMs }) {
   const headers = { Accept: 'application/json', 'Content-Type': 'application/json' }
   if (auth) {
     const token = await getToken()
@@ -47,9 +54,15 @@ export async function api(path, { method = 'GET', body, auth = false } = {}) {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(timeoutMs),
     })
-  } catch {
-    return { ok: false, error: 'No se pudo conectar con la instancia.' }
+  } catch (err) {
+    const timeout = err?.name === 'TimeoutError'
+    return {
+      ok: false,
+      status: 0,
+      error: timeout ? 'El servidor no respondió a tiempo.' : 'No se pudo conectar con la instancia.',
+    }
   }
 
   let data = {}

@@ -1,0 +1,29 @@
+name: Pruebas
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  api:
+    name: Pruebas de la API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: eventos-backend
+    steps:
+      - name: Tomar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: eventos-backend/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar pruebas unitarias y de integración
+        run: npm test

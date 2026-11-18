@@ -69,8 +69,24 @@ async function repairSeedEncoding() {
   if (fixed) console.log(`Acentos corregidos en ${fixed} valores.`)
 }
 
+async function ensureListIndex() {
+  const rows = await query(
+    `SELECT 1 AS presente
+     FROM information_schema.statistics
+     WHERE table_schema = DATABASE()
+       AND table_name = 'eventos'
+       AND index_name = 'idx_eventos_listado'
+     LIMIT 1`
+  )
+  if (rows.length) return
+  await query(
+    'ALTER TABLE eventos ADD INDEX idx_eventos_listado (estado, es_destacado, fecha_inicio)'
+  )
+}
+
 async function ensureSchema() {
   await ensureSupportTable()
+  await ensureListIndex()
   await repairSeedEncoding()
 }
 

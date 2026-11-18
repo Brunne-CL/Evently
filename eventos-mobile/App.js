@@ -15,6 +15,7 @@ import {
 } from 'react-native'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { api, getToken, parseQrCode, setToken } from './src/api'
+import { crearGuardia } from './src/resiliencia'
 
 const INK = '#161616'
 const MUTED = '#6E6E68'
@@ -294,15 +295,19 @@ function EventList() {
   const [selected, setSelected] = useState(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const guardia = useRef(crearGuardia())
 
   const load = useCallback(async () => {
+    const turno = guardia.current.iniciar()
     setLoading(true)
-    const data = await api('/api/events')
+    const data = await api('/api/events?limit=50')
+    if (!guardia.current.esVigente(turno)) return
     setLoading(false)
     if (!data.ok) {
       setError(data.error || 'No se pudieron cargar los eventos.')
       return
     }
+    setError('')
     setEvents(data.events || [])
   }, [])
 
