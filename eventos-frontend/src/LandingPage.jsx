@@ -29,7 +29,7 @@ import {
   Watch,
   CheckCircle2,
   Ticket,
-  BellRing,
+  Smartphone,
   BadgeCheck,
   // Footer / social
   Instagram,
@@ -60,7 +60,7 @@ import PromoPopup from './components/PromoPopup.jsx'
 import NotificationPrompt from './components/NotificationPrompt.jsx'
 import InstallPrompt from './components/InstallPrompt.jsx'
 import { LOGO_LIGHT, LOGO_DARK } from './constants/brand.js'
-import { apiMisEventos, apiReserveEvent } from './lib/api.js'
+import { apiMisEventos } from './lib/api.js'
 
 const EASE = [0.16, 1, 0.3, 1]
 
@@ -1655,48 +1655,13 @@ function HowItWorks() {
 }
 
 /* ============================================================
-   6. CTA SMARTWATCH
+   6. DESCARGA DE LA APP MÓVIL
    ------------------------------------------------------------
-   Bloque promocional del wearable con ilustración estilizada.
+   El teléfono instala el APK de Evently. El reloj no entra aquí.
    ============================================================ */
-function SmartwatchCTA() {
-  const showToast = useToast()
-  const { isAuthenticated } = useAuth()
-  const { events, refresh } = useEventData()
-  const [confirmed, setConfirmed] = useState(false)
-  const [pulse, setPulse] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const smartwatchEvent =
-    events.find((event) => event.title.includes('IA')) || events[0]
-
-  const handleWatchConfirm = async () => {
-    if (!isAuthenticated) {
-      showToast('Inicia sesión para confirmar desde tu smartwatch.', 'info')
-      return
-    }
-    if (!smartwatchEvent) {
-      showToast('No hay un evento disponible para confirmar.', 'info')
-      return
-    }
-
-    setBusy(true)
-    const result = await apiReserveEvent(smartwatchEvent.id)
-    setBusy(false)
-    if (!result.ok) {
-      showToast(result.error || 'No se pudo confirmar la asistencia.', 'info')
-      return
-    }
-
-    setConfirmed(Boolean(result.confirmed))
-    setPulse(true)
-    showToast('¡Asistencia confirmada desde tu smartwatch!', 'success')
-    await refresh()
-    window.dispatchEvent(new Event('evently:reservations-changed'))
-    setTimeout(() => setPulse(false), 600)
-  }
-
+function MobileAppCTA() {
   return (
-    <section className="relative py-24 sm:py-32 overflow-hidden">
+    <section id="descargar" className="relative py-24 sm:py-32 overflow-hidden">
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -1712,25 +1677,25 @@ function SmartwatchCTA() {
           <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-12 p-8 sm:p-12 lg:p-16 items-center">
             <div>
               <div className="inline-flex items-center gap-2 glass rounded-full px-3 py-1.5 mb-7">
-                <Zap className="w-3.5 h-3.5 text-evently-primary" />
+                <Smartphone className="w-3.5 h-3.5 text-evently-primary" />
                 <span className="text-[10px] font-bold tracking-widest uppercase text-evently-textSecondary">
-                  Smart Devices
+                  App móvil
                 </span>
               </div>
 
               <h2 className="font-display font-black text-4xl sm:text-5xl tracking-[-0.02em] mb-6 leading-[1.05] text-evently-text">
-                Tu próximo evento,
+                Evently en
                 <br />
-                <span className="text-gradient">a un toque</span>
+                <span className="text-gradient">tu teléfono</span>
               </h2>
 
               <p className="text-evently-textSecondary text-base sm:text-lg mb-8 leading-relaxed max-w-md">
-                Compatible con Apple Watch, Wear OS y Garmin. Recibe recordatorios
-                y confirma tu asistencia con un solo toque — sin abrir la app.
+                Descarga la app de Android. Entra con tu cuenta o con el código QR
+                y, la siguiente vez que la abras, la huella del teléfono confirma que eres tú.
               </p>
 
               <div className="flex flex-wrap gap-2 mb-10">
-                {['Apple Watch', 'Wear OS', 'Garmin', 'Fitbit'].map((d) => (
+                {['Android', 'Huella', 'Código QR', 'Eventos'].map((d) => (
                   <span
                     key={d}
                     className="glass rounded-full px-4 py-2 text-xs font-semibold text-evently-textSecondary"
@@ -1740,18 +1705,19 @@ function SmartwatchCTA() {
                 ))}
               </div>
 
-              <motion.button
+              <motion.a
+                href="/descargas/Evently.apk"
+                download="Evently.apk"
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => showToast('Próximamente en App Store y Google Play', 'info')}
                 className="btn-primary inline-flex items-center gap-2 px-7 py-4 rounded-2xl"
               >
                 Descargar app
                 <ArrowRight className="w-5 h-5" />
-              </motion.button>
+              </motion.a>
             </div>
 
-            <div className="relative h-80 sm:h-96 flex items-center justify-center">
+            <div className="relative h-80 sm:h-[28rem] flex items-center justify-center">
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
@@ -1759,46 +1725,27 @@ function SmartwatchCTA() {
               >
                 <div className="absolute inset-0 blur-[60px] scale-90 opacity-50 bg-evently-primary rounded-full" />
 
-                <div className="relative w-60 h-72 sm:w-64 sm:h-80 rounded-[2.5rem] shadow-elevated p-5 flex flex-col border border-evently-border bg-evently-text">
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-28 h-2.5 rounded-t-lg bg-evently-textSecondary/40" />
-                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-28 h-2.5 rounded-b-lg bg-evently-textSecondary/40" />
+                <div className="relative w-52 h-[22rem] sm:w-56 sm:h-[26rem] rounded-[2.2rem] shadow-elevated p-3 flex flex-col border border-evently-border bg-evently-text">
+                  <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-1.5 rounded-full bg-white/25" />
 
-                  <div className="flex-1 rounded-[1.75rem] p-5 flex flex-col justify-between bg-gradient-to-br from-evently-primary/90 via-evently-secondary/80 to-evently-primary/70">
-                    <div className="flex justify-between items-start">
-                      <div className="text-xs text-white/70 font-medium">12:42</div>
-                      <BellRing className="w-4 h-4 text-white/90" />
+                  <div className="flex-1 rounded-[1.7rem] px-4 pt-8 pb-4 flex flex-col bg-[#f4f1ea] text-evently-text">
+                    <EventlyLogo variant="light" className="h-8 w-auto self-center" />
+                    <p className="mt-6 text-[11px] font-semibold uppercase tracking-widest text-evently-primary">
+                      Querétaro
+                    </p>
+                    <p className="mt-1 font-display font-black text-xl leading-tight">
+                      Descubre eventos
+                    </p>
+                    <div className="mt-4 rounded-2xl bg-white border border-black/5 p-3 shadow-sm">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-evently-primary">Próximo</p>
+                      <p className="mt-1 text-sm font-semibold leading-snug">Fiesta de bienvenida estudiantil</p>
+                      <p className="mt-1 text-[11px] text-evently-muted">30 sep · Foro Imperial</p>
                     </div>
-
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest mb-1 font-bold text-white/80 inline-flex items-center gap-1">
-                        <BadgeCheck className="w-3 h-3" />
-                        Evently · Gratis
-                      </div>
-                      <div className="text-white font-bold text-sm mb-4 leading-tight">
-                        {smartwatchEvent?.title || 'Próximo evento'} · recordatorio
-                      </div>
-
-                      <div className="flex gap-2">
-                        <motion.button
-                          onClick={handleWatchConfirm}
-                          disabled={busy || confirmed}
-                          animate={pulse ? { scale: [1, 1.05, 1] } : {}}
-                          className={`flex-1 py-2 rounded-full text-white text-xs font-bold border transition-all duration-500 ${
-                            confirmed
-                              ? 'bg-white/30 border-white/50'
-                              : 'bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30'
-                          }`}
-                        >
-                          {busy ? 'Guardando…' : confirmed ? '✓ Confirmado' : 'Confirmar'}
-                        </motion.button>
-                        <button
-                          onClick={() => showToast('Recordatorio pospuesto 15 min', 'info')}
-                          className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center border border-white/20 hover:bg-white/25 transition-colors"
-                          aria-label="Posponer"
-                        >
-                          <X className="w-3 h-3 text-white" />
-                        </button>
-                      </div>
+                    <div className="mt-auto flex items-center gap-2 text-[11px] text-evently-textSecondary">
+                      <span className="w-7 h-7 rounded-full bg-white border border-black/10 flex items-center justify-center text-evently-primary font-bold">
+                        ✓
+                      </span>
+                      Sesión protegida con tu huella
                     </div>
                   </div>
                 </div>
@@ -2619,7 +2566,7 @@ export default function LandingPage() {
         <FeaturedEvents onOpenEvent={openEvent} />
         <MyEventsSection onOpenAuth={openAuth} onOpenEvent={openEvent} />
         <HowItWorks />
-        <SmartwatchCTA />
+        <MobileAppCTA />
         <Footer onOpenSupport={() => setSupportOpen(true)} />
         <BackToTop />
         <PromoPopup onCta={scrollToEvents} />
