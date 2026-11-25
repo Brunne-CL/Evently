@@ -49,6 +49,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from './context/AuthContext.jsx'
 import { useEventData } from './context/EventDataContext.jsx'
+import { apiEvents } from './lib/api.js'
 import AuthModal from './components/AuthModal.jsx'
 import QrSessionModal from './components/QrSessionModal.jsx'
 import SupportModal from './components/SupportModal.jsx'
@@ -2097,133 +2098,29 @@ function Footer({ onOpenSupport }) {
 /* ============================================================
    8. SEARCH MODAL
    ------------------------------------------------------------
-   Buscador interno del sitio. Indexa eventos, categorías, pasos
-   y secciones. Soporta navegación por teclado:
+   Buscador del catálogo. Al escribir consulta la API por nombre,
+   lugar, descripción o categoría y abre el evento. No recorta
+   la lista que ya está dibujada en la página.
      · ⌘/Ctrl + K  → abrir
      · ESC         → cerrar
      · ↑ / ↓       → mover selección
-     · Enter       → ir a la sección del resultado
+     · Enter       → abrir el evento
    Diseño premium: barra amplia + panel flotante estilo Notion/Airbnb.
    ============================================================ */
 
 const SEARCH_PREVIEW_STEPS = [STEPS[2], STEPS[0]]
 
-// Secciones navegables del sitio (id = ancla destino).
-const SITE_SECTIONS = [
-  {
-    id: 'inicio',
-    title: 'Inicio',
-    description: 'Encuentra eventos gratuitos cerca de ti',
-    icon: Sparkles,
-    keywords: 'inicio home hero principal landing eventos gratuitos cerca',
-  },
-  {
-    id: 'categorias',
-    title: 'Categorías',
-    description: 'Explora eventos por categoría',
-    icon: Palette,
-    keywords: 'categorias categorías explorar tipos clasificación',
-  },
-  {
-    id: 'eventos',
-    title: 'Eventos destacados',
-    description: 'Los eventos gratuitos más populares cerca de ti',
-    icon: Ticket,
-    keywords: 'eventos destacados populares featured cerca gratis',
-  },
-  {
-    id: 'como-funciona',
-    title: 'Cómo funciona',
-    description: '4 pasos para asistir a un evento gratis',
-    icon: PlayCircle,
-    keywords: 'como funciona pasos guía tutorial reloj smartwatch',
-  },
-]
-
-/**
- * normaliza un texto: minúsculas + sin acentos.
- * Permite buscar "academicos" y encontrar "Académicos".
- */
-function normalize(str) {
-  return (str || '')
-    .toString()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-}
-
 function SearchModal({ open, onClose, onOpenEvent }) {
   const showToast = useToast()
-  const { events, categories, totalEvents } = useEventData()
+  const { categories, totalEvents } = useEventData()
   const eventsBadge = formatEventsBadge(totalEvents)
   const [query, setQuery] = useState('')
   const [activeIdx, setActiveIdx] = useState(0)
+  const [hits, setHits] = useState([])
+  const [searching, setSearching] = useState(false)
+  const [searchError, setSearchError] = useState('')
   const inputRef = useRef(null)
   const listRef = useRef(null)
-
-  const index = useMemo(() => {
-    const items = []
-
-    events.forEach((e) => {
-      items.push({
-        id: `event-${e.id}`,
-        type: 'Eventos',
-        kind: 'event',
-        eventId: e.id,
-        title: e.title,
-        subtitle: `${e.category} · ${e.date} · ${e.location}`,
-        keywords: normalize(
-          [e.title, e.category, e.date, e.time, e.location, e.description].join(' ')
-        ),
-        sectionId: 'eventos',
-        icon: Ticket,
-        event: e,
-      })
-    })
-
-    categories.forEach((c) => {
-      items.push({
-        id: `cat-${c.name}`,
-        type: 'Categorías',
-        kind: 'category',
-        title: c.name,
-        subtitle: `${c.count.toLocaleString('es-MX')} eventos`,
-        keywords: normalize([c.name, String(c.count), 'eventos'].join(' ')),
-        sectionId: 'categorias',
-        icon: c.icon,
-        count: c.count,
-        categoryName: c.name,
-      })
-    })
-
-    STEPS.forEach((s, i) => {
-      items.push({
-        id: `step-${i}`,
-        type: 'Cómo funciona',
-        kind: 'step',
-        title: s.title,
-        subtitle: s.description,
-        keywords: normalize([s.title, s.description].join(' ')),
-        sectionId: 'como-funciona',
-        icon: s.icon,
-      })
-    })
-
-    SITE_SECTIONS.forEach((s) => {
-      items.push({
-        id: `sec-${s.id}`,
-        type: 'Secciones',
-        kind: 'section',
-        title: s.title,
-        subtitle: s.description,
-        keywords: normalize(`${s.title} ${s.description} ${s.keywords}`),
-        sectionId: s.id,
-        icon: s.icon,
-      })
-    })
-
-    return items
-  }, [events, categories])
 
   const defaultItems = useMemo(
     () => [
@@ -2250,28 +2147,51 @@ function SearchModal({ open, onClose, onOpenEvent }) {
     [categories]
   )
 
-  const results = useMemo(() => {
-    const q = normalize(query.trim())
-    if (!q) return []
-    const tokens = q.split(/\s+/).filter(Boolean)
-    const scored = []
-    for (const item of index) {
-      let score = 0
-      let allMatch = true
-      for (const tk of tokens) {
-        const idx = item.keywords.indexOf(tk)
-        if (idx === -1) {
-          allMatch = false
-          break
-        }
-        score += idx === 0 ? 3 : 1
-        if (normalize(item.title).startsWith(tk)) score += 5
-      }
-      if (allMatch) scored.push({ ...item, score })
+  const results = useMemo(
+    () =>
+      hits.map((event) => ({
+        id: `event-${event.id}`,
+        type: 'Eventos',
+        kind: 'event',
+        title: event.title,
+        subtitle: `${event.category} · ${event.date} · ${event.location}`,
+        icon: Ticket,
+        event,
+      })),
+    [hits]
+  )
+
+  useEffect(() => {
+    const q = query.trim()
+    if (q.length < 2) {
+      setHits([])
+      setSearching(false)
+      setSearchError('')
+      return undefined
     }
-    scored.sort((a, b) => b.score - a.score)
-    return scored.slice(0, 20)
-  }, [query, index])
+
+    let cancelled = false
+    setHits([])
+    setSearching(true)
+    setSearchError('')
+    const timer = setTimeout(async () => {
+      const result = await apiEvents({ q, limit: 20 })
+      if (cancelled) return
+      setSearching(false)
+      if (!result.ok) {
+        setHits([])
+        setSearchError(result.error || 'No se pudo buscar.')
+        return
+      }
+      setSearchError('')
+      setHits(result.events || [])
+    }, 280)
+
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [query])
 
   const grouped = useMemo(() => {
     const order = []
@@ -2503,14 +2423,21 @@ function SearchModal({ open, onClose, onOpenEvent }) {
                   </div>
                 )}
 
-                {hasQuery && results.length === 0 && (
+                {hasQuery && (searching || results.length === 0) && (
                   <div className="px-6 py-14 text-center">
                     <div className="inline-flex w-14 h-14 rounded-2xl items-center justify-center mb-4 bg-evently-bg border border-evently-border">
                       <Search className="w-6 h-6 text-evently-muted" />
                     </div>
-                    <p className="text-evently-text font-semibold mb-1">Sin resultados</p>
+                    <p className="text-evently-text font-semibold mb-1">
+                      {searching ? 'Buscando…' : searchError ? 'No se pudo buscar' : query.trim().length < 2 ? 'Sigue escribiendo' : 'Sin resultados'}
+                    </p>
                     <p className="text-evently-muted text-sm">
-                      No hay coincidencias para &ldquo;{query}&rdquo;
+                      {searchError
+                        || (query.trim().length < 2
+                          ? 'Escribe al menos 2 letras para buscar en el catálogo.'
+                          : searching
+                            ? 'Consultando eventos por nombre, lugar o descripción.'
+                            : `Ningún evento coincide con “${query}”.`)}
                     </p>
                   </div>
                 )}
@@ -2564,7 +2491,9 @@ function SearchModal({ open, onClose, onOpenEvent }) {
               <div className="flex items-center justify-between gap-3 px-5 sm:px-6 py-3.5 border-t border-evently-border/60 bg-evently-bg/40">
                 <span className="text-xs text-evently-muted">
                   {hasQuery
-                    ? `${results.length} resultado${results.length !== 1 ? 's' : ''}`
+                    ? (searching
+                      ? 'Buscando en el catálogo…'
+                      : `${results.length} evento${results.length !== 1 ? 's' : ''}`)
                     : `${categories.length} categorías · ${SEARCH_PREVIEW_STEPS.length} atajos`}
                 </span>
                 <div className="flex items-center gap-3 text-[11px] text-evently-muted">

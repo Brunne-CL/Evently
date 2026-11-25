@@ -30,6 +30,16 @@ function desplazamiento(value) {
   return n
 }
 
+function terminoBusqueda(value) {
+  const q = String(value || '').trim().replace(/\s+/g, ' ').slice(0, 80)
+  if (q.length < 2) return ''
+  return q
+}
+
+function patronLike(value) {
+  return `%${value.replace(/[\\%_]/g, (ch) => `\\${ch}`)}%`
+}
+
 function recuperarIdempotencia(clave) {
   if (!clave) return null
   const previa = idempotencia.get(clave)
@@ -105,6 +115,14 @@ async function listEvents(req, res) {
     if (Number.isInteger(categoryId) && categoryId > 0) {
       filter += ' AND e.categoria_id = :categoryId'
       params.categoryId = categoryId
+    }
+
+    const q = terminoBusqueda(req.query.q)
+    if (q) {
+      filter += ` AND (
+        e.titulo LIKE :q OR e.descripcion LIKE :q OR e.ubicacion LIKE :q OR c.nombre LIKE :q
+      )`
+      params.q = patronLike(q)
     }
 
     const rows = await query(

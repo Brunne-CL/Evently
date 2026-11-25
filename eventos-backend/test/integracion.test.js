@@ -98,6 +98,21 @@ describe('AUT-04 integración del listado', () => {
     assert.equal(respuesta.json.events[0].title, 'Festival')
     assert.equal(respuesta.json.events[0].spots, 9)
     assert.equal(Object.hasOwn(respuesta.json.events[0], 'password'), false)
+
+    let sqlVisto = ''
+    let paramsVistos = null
+    state.query = async (sql, params) => {
+      sqlVisto = String(sql)
+      paramsVistos = params
+      return String(sql).includes('FROM eventos') ? [filaEvento()] : []
+    }
+    const corta = await http('/api/events?q=a')
+    assert.equal(corta.status, 200)
+    assert.equal(sqlVisto.includes('LIKE'), false)
+    const busca = await http(`/api/events?q=${encodeURIComponent('fiesta')}`)
+    assert.equal(busca.status, 200)
+    assert.match(sqlVisto, /LIKE :q/)
+    assert.equal(paramsVistos.q, '%fiesta%')
   })
 })
 

@@ -215,9 +215,17 @@ export async function apiCategories() {
   return request('/api/categories')
 }
 
-export async function apiEvents(categoryId) {
-  const query = categoryId ? `?categoryId=${encodeURIComponent(categoryId)}` : ''
-  return request(`/api/events${query}`)
+export async function apiEvents(categoryIdOrOptions) {
+  const options =
+    categoryIdOrOptions && typeof categoryIdOrOptions === 'object'
+      ? categoryIdOrOptions
+      : { categoryId: categoryIdOrOptions }
+  const params = new URLSearchParams()
+  if (options.categoryId) params.set('categoryId', String(options.categoryId))
+  if (options.q) params.set('q', options.q)
+  if (options.limit) params.set('limit', String(options.limit))
+  const query = params.toString()
+  return request(`/api/events${query ? `?${query}` : ''}`)
 }
 
 export async function apiReserveEvent(eventId) {
