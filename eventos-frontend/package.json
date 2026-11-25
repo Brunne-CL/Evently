@@ -19,13 +19,16 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "postinstall": "node scripts/apply-biometric-patch.mjs",
     "test:search": "node scripts/test-search.mjs",
     "check:share": "node scripts/check-share.mjs",
     "share": "cloudflared tunnel --url http://127.0.0.1:5173",
     "share:named": "npx --yes localtunnel --port 5173 --subdomain evently-qro"
   },
   "dependencies": {
+    "@aparajita/capacitor-biometric-auth": "^10.0.0",
     "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
     "@capacitor/cli": "^8.5.3",
     "@capacitor/core": "^8.5.3",
     "framer-motion": "^11.5.4",

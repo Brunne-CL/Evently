@@ -4,6 +4,7 @@ import LandingPage from './LandingPage.jsx'
 import EventlyTVWidget from './widgets/EventlyTVWidget.jsx'
 import FlutterDashboardEmbed from './components/FlutterDashboardEmbed.jsx'
 import OpenInApp from './components/OpenInApp.jsx'
+import FingerprintGate from './components/FingerprintGate.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 
 function App() {
@@ -21,7 +22,9 @@ function App() {
 
   return (
     <AuthProvider>
-      <EventDataProvider>{page}</EventDataProvider>
+      <FingerprintGate>
+        <EventDataProvider>{page}</EventDataProvider>
+      </FingerprintGate>
     </AuthProvider>
   )
 }
