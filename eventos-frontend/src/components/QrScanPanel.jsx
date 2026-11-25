@@ -1,4 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import { Capacitor } from '@capacitor/core'
+import {
+  BarcodeFormat,
+  BarcodeScanner,
+} from '@capacitor-mlkit/barcode-scanning'
 import { Camera, Loader2, Smartphone } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { parseQrLoginPayload } from '../lib/qrLogin.js'
@@ -46,10 +51,39 @@ export default function QrScanPanel({ onSuccess }) {
     }
   }
 
+  const scanWithPhoneCamera = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const module = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable()
+      if (!module.available) {
+        await BarcodeScanner.installGoogleBarcodeScannerModule()
+        setError('El teléfono está preparando el lector. Espera un momento y pulsa otra vez.')
+        return
+      }
+      const { barcodes } = await BarcodeScanner.scan({
+        formats: [BarcodeFormat.QrCode],
+      })
+      const raw = barcodes?.[0]?.rawValue || barcodes?.[0]?.displayValue || ''
+      if (!raw) return
+      await redeem(raw)
+    } catch (error) {
+      const message = String(error?.message || '')
+      if (/cancel/i.test(message)) return
+      setError('No se pudo abrir la cámara para leer el código.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const startCamera = async () => {
     setError('')
+    if (Capacitor.isNativePlatform()) {
+      await scanWithPhoneCamera()
+      return
+    }
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-      setError('Aquí no se puede usar la cámara. Escanéalo con la cámara del teléfono: el enlace abre la sesión.')
+      setError('Aquí no se puede usar la cámara. Ábrelo en la app Evently y pulsa Escanear código QR.')
       return
     }
     if (!('BarcodeDetector' in window)) {

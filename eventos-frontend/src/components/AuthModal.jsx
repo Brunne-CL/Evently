@@ -13,6 +13,8 @@ import {
   Phone,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
+import { isNativeApp } from '../lib/biometric.js'
+import QrScanPanel from './QrScanPanel.jsx'
 import { LOGO_LIGHT } from '../constants/brand.js'
 
 const INITIAL_LOGIN = { email: '', password: '' }
@@ -224,6 +226,11 @@ export default function AuthModal({ open, onClose, initialMode = 'login' }) {
                       Regístrate
                     </button>
                   </p>
+                  {isNativeApp() && (
+                    <div className="border-t border-evently-border pt-4">
+                      <QrScanPanel onSuccess={handleClose} />
+                    </div>
+                  )}
                 </form>
               )}
 
