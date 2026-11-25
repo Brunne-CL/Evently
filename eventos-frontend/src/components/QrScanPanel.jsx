@@ -19,7 +19,6 @@ export default function QrScanPanel({ onSuccess }) {
   const [scanning, setScanning] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [paste, setPaste] = useState('')
 
   const stopCamera = () => {
     stopRef.current = true
@@ -173,32 +172,6 @@ export default function QrScanPanel({ onSuccess }) {
           {loading ? 'Entrando...' : 'Escanear código QR'}
         </button>
       )}
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          redeem(paste)
-        }}
-        className="space-y-2"
-      >
-        <label className="text-[11px] text-evently-muted" htmlFor="qr-paste">
-          O pega el enlace del código
-        </label>
-        <input
-          id="qr-paste"
-          value={paste}
-          onChange={(e) => setPaste(e.target.value)}
-          placeholder="https://…/?qr=…"
-          className="w-full px-4 py-3 rounded-xl glass text-sm focus:outline-none focus:ring-2 focus:ring-[#10B981] text-evently-text placeholder-evently-muted"
-        />
-        <button
-          type="submit"
-          disabled={loading || !paste.trim()}
-          className="w-full py-2.5 rounded-full border border-evently-border text-sm font-medium disabled:opacity-50"
-        >
-          Entrar con el enlace
-        </button>
-      </form>
     </div>
   )
 }
