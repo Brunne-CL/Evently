@@ -3,6 +3,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
+COPY scripts/apply-biometric-patch.mjs scripts/apply-biometric-patch.mjs
 RUN npm ci
 
 COPY . .
