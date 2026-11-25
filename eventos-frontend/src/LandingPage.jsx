@@ -1350,8 +1350,8 @@ function MyEventsSection({ onOpenAuth, onOpenEvent }) {
       return
     }
     let cancelled = false
-    const loadReservations = async () => {
-      setLoading(true)
+    const loadReservations = async (silent = false) => {
+      if (!silent) setLoading(true)
       setError('')
       const data = await apiMisEventos()
       if (cancelled) return
@@ -1360,11 +1360,18 @@ function MyEventsSection({ onOpenAuth, onOpenEvent }) {
       setLoading(false)
     }
 
+    const onLive = (event) => {
+      const scopes = event.detail?.scopes || []
+      if (scopes.includes('user') || scopes.includes('catalog')) loadReservations(true)
+    }
+
     loadReservations()
     window.addEventListener('evently:reservations-changed', loadReservations)
+    window.addEventListener('evently:live', onLive)
     return () => {
       cancelled = true
       window.removeEventListener('evently:reservations-changed', loadReservations)
+      window.removeEventListener('evently:live', onLive)
     }
   }, [isAuthenticated])
 
@@ -2140,6 +2147,19 @@ function SearchModal({ open, onClose, onOpenEvent }) {
     }
   }, [query])
 
+  useEffect(() => {
+    if (!open) return undefined
+    const onLive = async (event) => {
+      const scopes = event.detail?.scopes || []
+      const q = query.trim()
+      if (!scopes.includes('catalog') || q.length < 2) return
+      const result = await apiEvents({ q, limit: 20 })
+      if (result.ok) setHits(result.events || [])
+    }
+    window.addEventListener('evently:live', onLive)
+    return () => window.removeEventListener('evently:live', onLive)
+  }, [open, query])
+
   const grouped = useMemo(() => {
     const order = []
     const map = new Map()
@@ -2495,6 +2515,7 @@ function QrLoginCatcher() {
 }
 
 export default function LandingPage() {
+  const { events } = useEventData()
   const [searchOpen, setSearchOpen] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
   const [authMode, setAuthMode] = useState('login')
@@ -2513,6 +2534,13 @@ export default function LandingPage() {
     if (!event) return
     setSelectedEvent(event)
   }, [])
+
+  useEffect(() => {
+    setSelectedEvent((current) => {
+      if (!current) return current
+      return events.find((item) => String(item.id) === String(current.id)) || null
+    })
+  }, [events])
 
   const scrollToEvents = useCallback(() => {
     document.getElementById('eventos')?.scrollIntoView({ behavior: 'smooth', block: 'start' })

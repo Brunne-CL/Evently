@@ -2,6 +2,7 @@ const { query } = require('../config/db')
 const { hashPassword, verifyPassword, isValidPin } = require('../utils/password')
 const { signAccessToken, revokeAccessToken } = require('../utils/tokens')
 const { createQrSession, takeQrSession, peekQrSession, QR_CODE_RE } = require('../utils/qrSessions')
+const { publish } = require('../live/hub')
 
 function publicUser(row) {
   return {
@@ -327,6 +328,7 @@ async function updateProfile(req, res) {
       return res.status(404).json({ ok: false, error: 'Usuario no encontrado.' })
     }
 
+    publish({ admin: true, userId: req.user.id })
     return res.json({
       ok: true,
       message: 'Perfil actualizado.',

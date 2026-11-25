@@ -43,6 +43,24 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  useEffect(() => {
+    const onLive = async (event) => {
+      const scopes = event.detail?.scopes || []
+      if (!scopes.includes('user') || !getToken()) return
+      const data = await apiMe()
+      if (data.ok) {
+        setUser((current) =>
+          current && JSON.stringify(current) === JSON.stringify(data.user) ? current : data.user
+        )
+        return
+      }
+      setUser(null)
+      clearSession()
+    }
+    window.addEventListener('evently:live', onLive)
+    return () => window.removeEventListener('evently:live', onLive)
+  }, [])
+
   const login = useCallback(async (credentials) => {
     const result = await apiLogin(credentials)
     if (result.ok) setUser(result.user)

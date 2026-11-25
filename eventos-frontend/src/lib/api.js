@@ -29,6 +29,10 @@ function resolveApiBase() {
 
 const API_BASE = resolveApiBase()
 
+export function apiUrl(path) {
+  return `${API_BASE}${path}`
+}
+
 const TOKEN_KEY = 'evently_token'
 const USER_KEY = 'evently_user'
 

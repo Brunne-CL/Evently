@@ -1,5 +1,6 @@
 const { query } = require('../config/db')
 const { hashPassword } = require('../utils/password')
+const { publish } = require('../live/hub')
 
 async function overview(_req, res) {
   try {
@@ -206,6 +207,7 @@ async function createUser(req, res) {
         role: values.role,
       }
     )
+    publish({ admin: true })
     return res.status(201).json({ ok: true, id: result.insertId, message: 'Persona creada.' })
   } catch (err) {
     if (isDuplicate(err)) {
@@ -265,6 +267,7 @@ async function updateUser(req, res) {
         id,
       })
     }
+    publish({ admin: true, userId: id })
     return res.json({ ok: true, id, message: 'Persona actualizada.' })
   } catch (err) {
     if (isDuplicate(err)) {
@@ -296,6 +299,7 @@ async function setUserActive(req, res) {
     if (!result.affectedRows) {
       return res.status(404).json({ ok: false, error: 'Persona no encontrada.' })
     }
+    publish({ admin: true, userId: id })
     return res.json({
       ok: true,
       id,
@@ -386,6 +390,7 @@ async function createEvent(req, res) {
           :image, :featured, :free, :status)`,
       values
     )
+    publish({ catalog: true, admin: true })
     return res.status(201).json({ ok: true, id: result.insertId, message: 'Evento creado.' })
   } catch (err) {
     if (isDuplicate(err)) {
@@ -421,6 +426,7 @@ async function updateEvent(req, res) {
        WHERE id = :id`,
       { ...values, id }
     )
+    publish({ catalog: true, admin: true })
     return res.json({ ok: true, id, message: 'Evento actualizado.' })
   } catch (err) {
     if (isDuplicate(err)) {
@@ -451,6 +457,7 @@ async function setTicketSolved(req, res) {
     if (!result.affectedRows) {
       return res.status(404).json({ ok: false, error: 'Reporte no encontrado.' })
     }
+    publish({ admin: true })
     return res.json({
       ok: true,
       id,

@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth')
 const eventsRoutes = require('./routes/events')
 const adminRoutes = require('./routes/admin')
 const supportRoutes = require('./routes/support')
+const liveRoutes = require('./routes/live')
 const { ensureAdmin } = require('./config/ensureAdmin')
 const { ensureSchema } = require('./config/ensureSchema')
 
@@ -77,6 +78,7 @@ app.get('/api/health', async (_req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/support', supportRoutes)
+app.use('/api/live', liveRoutes)
 app.use('/api', eventsRoutes)
 
 app.use((_req, res) => {

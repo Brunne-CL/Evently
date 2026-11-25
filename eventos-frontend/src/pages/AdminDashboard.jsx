@@ -85,6 +85,16 @@ export default function AdminDashboard() {
     load().then(() => setLoading(false))
   }, [isAdmin, load])
 
+  useEffect(() => {
+    if (!isAdmin) return undefined
+    const onLive = (event) => {
+      const scopes = event.detail?.scopes || []
+      if (scopes.includes('admin') || scopes.includes('catalog')) load()
+    }
+    window.addEventListener('evently:live', onLive)
+    return () => window.removeEventListener('evently:live', onLive)
+  }, [isAdmin, load])
+
   /** Ejecuta un cambio, recarga los datos y muestra el resultado. */
   async function run(key, action) {
     setBusyKey(key)

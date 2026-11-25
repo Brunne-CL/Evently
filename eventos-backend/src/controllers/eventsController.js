@@ -1,4 +1,5 @@
 const { pool, query } = require('../config/db')
+const { publish } = require('../live/hub')
 
 // Un formateador por proceso. Crearlo dentro del ciclo reservaba miles de objetos
 // y, con el catálogo completo, llevaba la API por encima de 500 ms y varios GB.
@@ -210,6 +211,7 @@ async function reserveEvent(req, res) {
     )
     await conn.commit()
 
+    publish({ catalog: true, admin: true, userId: req.user.id })
     return responder(res, 201, {
       ok: true,
       confirmed: true,
@@ -255,6 +257,7 @@ async function cancelReservation(req, res) {
     )
     await conn.commit()
 
+    publish({ catalog: true, admin: true, userId: req.user.id })
     return res.json({ ok: true, confirmed: false, message: 'Reserva cancelada.' })
   } catch (err) {
     await conn.rollback()
@@ -285,6 +288,7 @@ async function addFavorite(req, res) {
        VALUES (:userId, :eventId)`,
       { userId: req.user.id, eventId }
     )
+    publish({ userId: req.user.id })
     return res.status(201).json({ ok: true, favorite: true })
   } catch (err) {
     console.error('[events/favorite]', err.message)
@@ -303,6 +307,7 @@ async function removeFavorite(req, res) {
       'DELETE FROM favoritos WHERE usuario_id = :userId AND evento_id = :eventId',
       { userId: req.user.id, eventId }
     )
+    publish({ userId: req.user.id })
     return res.json({ ok: true, favorite: false })
   } catch (err) {
     console.error('[events/unfavorite]', err.message)

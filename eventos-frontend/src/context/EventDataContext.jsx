@@ -9,7 +9,9 @@ import {
   Coffee,
   HeartHandshake,
 } from 'lucide-react'
+import { useAuth } from './AuthContext.jsx'
 import { apiCategories, apiEvents } from '../lib/api.js'
+import { openLive } from '../lib/live.js'
 
 const ICONS = {
   PartyPopper,
@@ -25,13 +27,14 @@ const ICONS = {
 const EventDataContext = createContext(null)
 
 export function EventDataProvider({ children }) {
+  const { user } = useAuth()
   const [events, setEvents] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const refresh = useCallback(async () => {
-    setLoading(true)
+  const refresh = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true)
     setError('')
 
     const [eventsResult, categoriesResult] = await Promise.all([
@@ -60,6 +63,27 @@ export function EventDataProvider({ children }) {
   useEffect(() => {
     refresh()
   }, [refresh])
+
+  useEffect(() => {
+    let timer
+    const onLive = (event) => {
+      const scopes = event.detail?.scopes || []
+      if (!scopes.includes('catalog')) return
+      refresh({ silent: true })
+    }
+    const stop = openLive((payload) => {
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('evently:live', { detail: payload }))
+      }, 120)
+    })
+    window.addEventListener('evently:live', onLive)
+    return () => {
+      clearTimeout(timer)
+      stop()
+      window.removeEventListener('evently:live', onLive)
+    }
+  }, [user?.id, refresh])
 
   const totalEvents = useMemo(
     () => categories.reduce((sum, category) => sum + Number(category.count || 0), 0),

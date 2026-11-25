@@ -1,4 +1,5 @@
 const { query } = require('../config/db')
+const { publish } = require('../live/hub')
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -52,6 +53,7 @@ async function createTicket(req, res) {
       { userId, name, email, subject, message }
     )
 
+    publish({ admin: true })
     return res.status(201).json({
       ok: true,
       message: 'Recibimos tu reporte. Lo revisaremos pronto.',

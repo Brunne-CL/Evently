@@ -214,3 +214,16 @@ describe('AUT-06 persistencia rechazada y servidor apagado', () => {
     assert.ok(Date.now() - inicioMs >= 500)
   })
 })
+
+describe('avisos en vivo', () => {
+  it('entrega el cambio a quien está escuchando', () => {
+    const { publish, subscribe } = require('../src/live/hub')
+    let visto = null
+    const dejar = subscribe((cambio) => {
+      visto = cambio
+    })
+    publish({ admin: true, catalog: true })
+    dejar()
+    assert.deepEqual(visto, { admin: true, catalog: true })
+  })
+})
