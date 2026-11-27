@@ -12,6 +12,7 @@ import {
   getToken,
   clearSession,
 } from '../lib/api.js'
+import { clearHomeWidget } from '../lib/widget.js'
 
 const AuthContext = createContext(null)
 
@@ -100,6 +101,7 @@ export function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     await apiLogout()
     setUser(null)
+    clearHomeWidget()
   }, [])
 
   return (

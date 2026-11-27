@@ -4,4 +4,9 @@
     <string name="title_activity_main">Evently</string>
     <string name="package_name">mx.edu.uteq.evently</string>
     <string name="custom_url_scheme">mx.edu.uteq.evently</string>
+    <string name="widget_name">Evently · Próximo evento</string>
+    <string name="widget_description">Muestra tu evento confirmado más cercano.</string>
+    <string name="widget_brand">Evently</string>
+    <string name="widget_label">Tu evento más próximo</string>
+    <string name="widget_empty_title">No hay un evento próximo</string>
 </resources>

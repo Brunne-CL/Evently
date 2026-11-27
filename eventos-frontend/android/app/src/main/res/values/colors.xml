@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3D5C48</color>
+    <color name="colorPrimaryDark">#2F4838</color>
+    <color name="colorAccent">#0F6E56</color>
+    <color name="widget_bg">#F4F1EA</color>
+    <color name="widget_title">#111827</color>
+    <color name="widget_muted">#6B7280</color>
+    <color name="widget_brand">#374151</color>
+    <color name="widget_icon_bg">#3D5C48</color>
+    <color name="widget_icon">#FFFFFF</color>
+</resources>

@@ -61,6 +61,7 @@ import NotificationPrompt from './components/NotificationPrompt.jsx'
 import InstallPrompt from './components/InstallPrompt.jsx'
 import { LOGO_LIGHT, LOGO_DARK } from './constants/brand.js'
 import { apiMisEventos } from './lib/api.js'
+import { clearHomeWidget, syncHomeWidget } from './lib/widget.js'
 
 const EASE = [0.16, 1, 0.3, 1]
 
@@ -1347,6 +1348,7 @@ function MyEventsSection({ onOpenAuth, onOpenEvent }) {
     if (!isAuthenticated) {
       setEventos([])
       setError('')
+      clearHomeWidget()
       return
     }
     let cancelled = false
@@ -1355,8 +1357,13 @@ function MyEventsSection({ onOpenAuth, onOpenEvent }) {
       setError('')
       const data = await apiMisEventos()
       if (cancelled) return
-      if (data.ok) setEventos(data.eventos || [])
-      else setError(data.error || 'No se pudieron cargar tus eventos.')
+      if (data.ok) {
+        const list = data.eventos || []
+        setEventos(list)
+        syncHomeWidget(list)
+      } else {
+        setError(data.error || 'No se pudieron cargar tus eventos.')
+      }
       setLoading(false)
     }
 

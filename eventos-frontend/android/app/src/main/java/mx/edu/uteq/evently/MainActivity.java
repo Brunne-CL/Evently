@@ -13,6 +13,13 @@ public class MainActivity extends BridgeActivity {
     private static final String CODE_PATTERN = "[A-Za-z0-9_-]{20,128}";
 
     @Override
+    public void onCreate(android.os.Bundle savedInstanceState) {
+        registerPlugin(EventlyWidgetPlugin.class);
+        super.onCreate(savedInstanceState);
+        openLoginInApp(getIntent());
+    }
+
+    @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
