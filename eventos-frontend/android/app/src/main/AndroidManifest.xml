@@ -48,6 +48,7 @@
 
         <receiver
             android:name=".NextEventWidgetProvider"
+            android:enabled="true"
             android:exported="true"
             android:label="@string/widget_name">
             <intent-filter>
